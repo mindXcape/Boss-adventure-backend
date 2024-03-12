@@ -1,9 +1,9 @@
 version: '3.8'
 
 services:
-  prod-backend:
-    container_name: prod-backend
-    image: dipeshkumarsah98/ba:latest
+  prod_backend:
+    container_name: prod_backend
+    image: dipeshkumarsah98/ba:backend-prod
     restart: always
     ports:
       - 8000:8080
@@ -32,7 +32,8 @@ services:
     command: -p 5432
     networks:
       - prod_network
-  redis:
+
+  prod_redis:
     container_name: redis
     image: redis:6.2.12
     restart: always
@@ -41,10 +42,21 @@ services:
     networks:
       - prod_network
 
+  watchtower:
+    container_name: watchtower
+    image: containrrr/watchtower
+    environment:
+      - WATCHTOWER_CLEANUP=true
+
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+    command: --interval 30 prod_backend
+
 networks:
   prod_network:
     driver: bridge
 
 volumes:
   postgres:
-    name: nest-db
+    name: prod_db
