@@ -1,9 +1,9 @@
 version: '3.8'
 
 services:
-  test-backend:
-    container_name: test-backend
-    image: dipeshkumarsah98/ba:/backend:dev
+  test_backend:
+    container_name: test_backend
+    image: dipeshkumarsah98/ba:backend-dev
     restart: always
     ports:
       - 8080:8080
@@ -21,7 +21,7 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=test
+      - POSTGRES_DB=test_db
     volumes:
       - postgres:/var/lib/postgresql/data
     ports:
@@ -38,6 +38,18 @@ services:
       - '6379:6379'
     networks:
       - test
+
+watchtower:
+  container_name: watchtower
+  image: containrrr/watchtower
+  environment:
+    - WATCHTOWER_CLEANUP=true
+
+  volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+
+  command: --interval 30 test_backend
+
 
 networks:
   test:
