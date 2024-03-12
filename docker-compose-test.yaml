@@ -39,16 +39,16 @@ services:
     networks:
       - test
 
-watchtower:
-  container_name: watchtower
-  image: containrrr/watchtower
-  environment:
-    - WATCHTOWER_CLEANUP=true
+  watchtower:
+    container_name: watchtower
+    image: containrrr/watchtower
+    environment:
+      - WATCHTOWER_CLEANUP=true
 
-  volumes:
-    - /var/run/docker.sock:/var/run/docker.sock
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
 
-  command: --interval 30 test_backend
+    command: --interval 30 test_backend
 
 
 networks:
