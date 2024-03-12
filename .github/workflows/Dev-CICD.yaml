@@ -41,7 +41,7 @@ jobs:
           context: .
           file: Dockerfile
           push: true
-          tags: dipeshkumarsah98/ba:backend:dev
+          tags: dipeshkumarsah98/ba:backend/dev
 
       - name: Build Docker image
         if: github.event_name == 'pull_request'
