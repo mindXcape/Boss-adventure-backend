@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
-import * as _ from 'lodash';
+
+const prisma = new PrismaClient();
 
 enum ROLE {
   ADMIN = 'ADMIN',
@@ -8,27 +9,41 @@ enum ROLE {
 
 export const users = [
   {
-    name: 'Raktim Admin',
+    name: 'Dipesh kumar sah',
     roles: [ROLE.ADMIN],
-    email: 'raktim@rumsan.com',
+    email: 'dipesh@mailinator.com',
   },
   {
-    name: 'Raktim User',
-    email: 'raktim@mailinator.com',
+    name: 'Subhashish Jung Shah',
+    roles: [ROLE.ADMIN],
+    email: 'subhashish@mailinator.com',
+  },
+  {
+    name: 'bus-adventures',
+    roles: [ROLE.ADMIN],
+    email: 'bus-adventuresh@mailinator.com',
+  },
+  {
+    name: 'Staff bus-adventures',
+    roles: [ROLE.USER],
+    email: 'staff-bus-adventures@mailinator.com',
   },
 ];
 
-const prisma = new PrismaClient();
-
-async function main() {
+const loadAdmin = async () => {
   for await (const user of users) {
-    const userAttrs = _.cloneDeep(user);
-    await prisma.user.create({
+    await prisma.admin.create({
       data: {
-        ...userAttrs,
+        ...user,
       },
     });
   }
+
+  console.log('Users seed data loaded');
+};
+
+async function main() {
+  await loadAdmin();
 }
 
 main()
