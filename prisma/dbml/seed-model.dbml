@@ -7,11 +7,11 @@ Project "SEED 2.0" {
   Note: 'SEED 2.0'
 }
 
-Table users {
+Table admins {
   id String [pk]
   name String [not null]
   email String [unique, not null]
-  walletAddress Bytes [unique]
+  phone String
   profileImage String
   roles Role[] [not null]
   isActive Boolean [not null, default: true]
@@ -19,7 +19,25 @@ Table users {
   lastLoggedIn DateTime [default: `now()`]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
-  deletedAt DateTime
+}
+
+Table users {
+  id String [pk]
+  name String [not null]
+  email String [unique, not null]
+  phone String
+  profileImage String
+  status String [not null, default: 'active']
+  country String [not null]
+  state String [not null]
+  city String [not null]
+  address String [not null]
+  zipCode String [not null]
+  companyName String [not null]
+  occupation String [not null]
+  passportNumber String [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
 }
 
 Enum Role {

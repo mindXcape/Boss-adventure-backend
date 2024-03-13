@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -29,19 +26,41 @@ enum Role {
   USER
 }
 
+model Admin {
+id                String       @id @default(uuid())
+name              String
+email             String       @unique
+phone             String?
+profileImage      String?
+roles             Role[]       @default([USER])
+isActive          Boolean      @default(true)
+isBlocked         Boolean      @default(false)
+lastLoggedIn      DateTime?    @default(now())
+createdAt         DateTime     @default(now())
+updatedAt         DateTime     @updatedAt
+
+@@map("admins")
+}
+
+// 
 model User {
-id            String       @id @default(uuid())
-name          String
-email         String       @unique
-walletAddress Bytes?       @unique
-profileImage  String?
-roles         Role[]       @default([USER])
-isActive      Boolean      @default(true)
-isBlocked     Boolean      @default(false)
-lastLoggedIn  DateTime?    @default(now())
-createdAt     DateTime     @default(now())
-updatedAt     DateTime     @updatedAt
-deletedAt     DateTime?  
+id                String       @id @default(uuid())
+name              String
+email             String       @unique
+phone             String?
+profileImage      String?
+status            String       @default("active")
+country           String
+state             String 
+city              String 
+address           String 
+zipCode           String 
+companyName       String
+occupation        String
+passportNumber    String
+
+createdAt         DateTime     @default(now())
+updatedAt         DateTime     @updatedAt
 
 @@map("users")
 }
