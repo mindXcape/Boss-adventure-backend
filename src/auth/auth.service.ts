@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { totp } from 'otplib';
 import { MailService } from 'src/mailer/mailer.service';
@@ -17,10 +23,18 @@ export class AuthService {
 
   async validateUser(email: string, otp: string): Promise<CreateAdminDto> {
     const user = await this.adminService.findOneByEmail(email);
-    if (user && user?.isActive && totp.verify({ token: otp, secret: process.env.OTP_SECRET })) {
-      return user;
+    // Todos: Incomplete if-condition checks (If otp is invalid, then what? send proper message)
+    if (!user) {
+      throw new NotFoundException('User not found');
     }
-    throw new NotFoundException('User not found');
+    if (!user.isActive) {
+      throw new UnauthorizedException('User is not active');
+    }
+    if (!totp.verify({ token: otp, secret: process.env.OTP_SECRET })) {
+      throw new UnauthorizedException('Invalid verification code');
+    }
+
+    return user;
   }
 
   async register(createUserDto: CreateAdminDto) {
