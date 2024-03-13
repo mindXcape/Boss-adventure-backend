@@ -10,22 +10,20 @@ export class UsersService {
 
   async register(createUserDto: CreateUserDto) {
     this._logger.log(`Registering new user: ${createUserDto?.email}`);
-    const walletAddress = hexStringToBuffer(createUserDto?.walletAddress);
+
     return this.prisma.user.create({
       data: {
         ...createUserDto,
-        walletAddress,
       },
     });
   }
 
   async create(createUserDto: CreateUserDto) {
     this._logger.log(`Creating new user: ${createUserDto?.email}`);
-    const walletAddress = hexStringToBuffer(createUserDto?.walletAddress);
+
     return this.prisma.user.create({
       data: {
         ...createUserDto,
-        walletAddress,
       },
     });
   }
