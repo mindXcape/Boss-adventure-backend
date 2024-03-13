@@ -1,17 +1,13 @@
 import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
 import { totp } from 'otplib';
-
 import { AuthService } from './auth.service';
-
 import { AuthDto } from './dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { CreateUserDto } from 'src/users/dto/user.dto';
-
 import { LocalAuthGuard } from './guards/local.auth.guard';
 import { Public } from 'src/common/decorators/public.decorator';
 import { RefreshJWTGuard } from './guards/refresh.auth.guard';
-
 import { ResponseMessage, Tokens } from './types';
+import { CreateAdminDto } from 'src/admins/dto/create-admin.dto';
 
 @Controller('auth')
 @ApiTags('Auth')
@@ -25,7 +21,7 @@ export class AuthController {
   @Public()
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  async login(@Request() req): Promise<CreateUserDto & Tokens> {
+  async login(@Request() req): Promise<CreateAdminDto & Tokens> {
     return await this.authService.login(req.user);
   }
 
@@ -35,11 +31,11 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'The found record',
-    type: [CreateUserDto],
+    type: [CreateAdminDto],
   })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
-  register(@Body() createUserDto: CreateUserDto): Promise<ResponseMessage | null> {
-    return this.authService.register(createUserDto);
+  register(@Body() createAdminDto: CreateAdminDto): Promise<ResponseMessage | null> {
+    return this.authService.register(createAdminDto);
   }
 
   @Public()
@@ -48,11 +44,11 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'The found record',
-    type: [CreateUserDto],
+    type: [CreateAdminDto],
   })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
-  async sendOtp(@Body() AuthDto: AuthDto): Promise<ResponseMessage | null> {
-    return this.authService.sendOtp(AuthDto);
+  async sendOtp(@Body() authDto: AuthDto): Promise<ResponseMessage | null> {
+    return this.authService.sendOtp(authDto);
   }
 
   @Public()
@@ -62,7 +58,7 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'The found record',
-    type: [CreateUserDto],
+    type: [CreateAdminDto],
   })
   async refresh(@Request() req): Promise<Omit<Tokens, 'refresh_token'>> {
     return this.authService.refreshToken(req.user);

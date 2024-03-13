@@ -2,9 +2,9 @@ import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { UsersService } from '../users/users.service';
 import { JWTStrategy, RefreshJWTStrategy, LocalStrategy } from './strategies';
 import { MailModule } from 'src/mailer/mailer.module';
+import { AdminsService } from 'src/admins/admins.service';
 
 @Module({
   imports: [
@@ -15,6 +15,6 @@ import { MailModule } from 'src/mailer/mailer.module';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, UsersService, LocalStrategy, JWTStrategy, RefreshJWTStrategy],
+  providers: [AuthService, AdminsService, LocalStrategy, JWTStrategy, RefreshJWTStrategy],
 })
 export class AuthModule {}

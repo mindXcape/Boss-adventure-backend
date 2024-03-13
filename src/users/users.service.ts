@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { hexStringToBuffer } from 'src/utils/string-format';
 
 @Injectable()
 export class UsersService {
