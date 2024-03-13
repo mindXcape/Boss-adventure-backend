@@ -57,7 +57,7 @@ address           String
 zipCode           String 
 companyName       String
 occupation        String
-passportNumber    String
+passportNumber    String?
 
 createdAt         DateTime     @default(now())
 updatedAt         DateTime     @updatedAt
