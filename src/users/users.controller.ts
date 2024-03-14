@@ -1,10 +1,21 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Query,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.auth.guard';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RoleGuard } from 'src/auth/guards/role.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
+import { PaginateQueryDto } from './dto/paginateUser.dto';
 
 @ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard, RoleGuard)
@@ -13,6 +24,7 @@ import { Roles } from 'src/common/decorators/roles.decorator';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @Roles('ADMIN')
   @Post()
   @ApiOperation({ summary: 'Create new user' })
   @ApiResponse({
@@ -34,8 +46,8 @@ export class UsersController {
     type: [CreateUserDto],
   })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
-  findAll() {
-    return this.usersService.findAll();
+  findAll(@Query() query: PaginateQueryDto) {
+    return this.usersService.findAll(query);
   }
 
   @Roles('ADMIN')
@@ -48,7 +60,7 @@ export class UsersController {
   })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
+    return this.usersService.findOne(id);
   }
 
   @Roles('ADMIN')
@@ -61,7 +73,7 @@ export class UsersController {
   })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
+    return this.usersService.update(id, updateUserDto);
   }
 
   @Roles('ADMIN')
@@ -74,6 +86,6 @@ export class UsersController {
   })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
+    return this.usersService.remove(id);
   }
 }

@@ -37,6 +37,7 @@
     "seed": "ts-node prisma/seed.ts"
   },
   "dependencies": {
+    "@faker-js/faker": "^8.4.1",
     "@fastify/helmet": "^11.0.0",
     "@fastify/static": "^6.10.2",
     "@nestjs-modules/mailer": "^1.9.1",

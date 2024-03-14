@@ -1,6 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { paginate } from 'src/utils/paginate';
+import { PaginateQueryDto } from './dto/paginateUser.dto';
 
 @Injectable()
 export class UsersService {
@@ -19,34 +21,84 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto) {
     this._logger.log(`Creating new user: ${createUserDto?.email}`);
-
-    return this.prisma.user.create({
-      data: {
-        ...createUserDto,
-      },
-    });
+    try {
+      return this.prisma.user.create({
+        data: {
+          ...createUserDto,
+        },
+      });
+    } catch (error) {
+      this._logger.error(error.message, error.stack);
+      throw new BadRequestException(error.message);
+    }
   }
 
-  findAll() {
-    return `This action returns all users`;
+  async findAll(query: PaginateQueryDto) {
+    try {
+      this._logger.log(`Fetching all users`);
+
+      const users = await paginate(
+        this.prisma.user,
+        {},
+        { perPage: +query.perPage || 10, page: +query.page || 1 },
+      );
+
+      return users;
+    } catch (error) {
+      this._logger.error(error.message, error.stack);
+      throw new BadRequestException(error.message);
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  findOne(id: string) {
+    try {
+      this._logger.log(`Fetching user: ${id}`);
+
+      return this.prisma.user.findUnique({
+        where: { id },
+      });
+    } catch (error) {
+      this._logger.error(error.message, error.stack);
+      throw new BadRequestException(error.message);
+    }
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
+  update(id: string, updateUserDto: UpdateUserDto) {
     this._logger.log(`Updating user: ${id}`);
-    return `This action updates a #${id} user with payload ${updateUserDto}`;
+    try {
+      return this.prisma.user.update({
+        where: { id },
+        data: {
+          ...updateUserDto,
+        },
+      });
+    } catch (error) {
+      this._logger.error(error.message, error.stack);
+      throw new BadRequestException(error.message);
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  remove(id: string) {
+    this._logger.log(`Removing user: ${id}`);
+    try {
+      return this.prisma.user.delete({
+        where: { id },
+      });
+    } catch (error) {
+      this._logger.error(error.message, error.stack);
+      throw new BadRequestException(error.message);
+    }
   }
 
   async findOneByEmail(email: string): Promise<any> {
-    return await this.prisma.user.findUnique({
-      where: { email },
-    });
+    this._logger.log(`Fetching user by email: ${email} `);
+    try {
+      return await this.prisma.user.findUnique({
+        where: { email },
+      });
+    } catch (error) {
+      this._logger.error(error.message, error.stack);
+      throw new BadRequestException(error.message);
+    }
   }
 }
