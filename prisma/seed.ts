@@ -1,4 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
+import { faker } from '@faker-js/faker';
 
 const prisma = new PrismaClient();
 
@@ -42,8 +43,34 @@ const loadAdmin = async () => {
   console.log('Users seed data loaded');
 };
 
+const loadUsers = async () => {
+  const fakerUser = (): Prisma.UserCreateInput => {
+    return {
+      name: faker.person.firstName(),
+      address: faker.location.streetAddress(),
+      city: faker.location.city(),
+      state: faker.location.state(),
+      country: faker.location.country(),
+      companyName: faker.company.name(),
+      email: faker.internet.email(),
+      occupation: faker.person.jobType(),
+      zipCode: faker.location.zipCode(),
+      phone: faker.phone.number(),
+      status: faker.helpers.arrayElement(['ACTIVE', 'INACTIVE', 'PENDING', 'BLOCKED']),
+      profileImage: faker.image.avatar(),
+      passportNumber: faker.string.alphanumeric({ length: { min: 5, max: 10 } }),
+    };
+  };
+  for (let i = 0; i < 100; i++) {
+    await prisma.user.create({ data: fakerUser() });
+  }
+
+  console.log('100 Users seed data loaded');
+};
+
 async function main() {
   await loadAdmin();
+  await loadUsers();
 }
 
 main()

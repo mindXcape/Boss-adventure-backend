@@ -436,6 +436,11 @@
   resolved "https://registry.npmjs.org/@eslint/js/-/js-8.46.0.tgz"
   integrity sha512-a8TLtmPi8xzPkCbp/OGFUo5yhRkHM2Ko9kOWP4znJr0WAhWyThaw3PnwX4vOTWOAMsV2uRt32PPDcEz63esSaA==
 
+"@faker-js/faker@^8.4.1":
+  version "8.4.1"
+  resolved "https://registry.npmjs.org/@faker-js/faker/-/faker-8.4.1.tgz"
+  integrity sha512-XQ3cU+Q8Uqmrbf2e0cIC/QN43sTBSC8KF12u29Mb47tWrt2hAgBXSgpZMj4Ao8Uk0iJcU99QsOCaIL8934obCg==
+
 "@fastify/accept-negotiator@^1.0.0":
   version "1.1.0"
   resolved "https://registry.npmjs.org/@fastify/accept-negotiator/-/accept-negotiator-1.1.0.tgz"
