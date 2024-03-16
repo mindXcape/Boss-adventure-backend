@@ -36,10 +36,16 @@ export class UsersService {
   async findAll(query: PaginateQueryDto) {
     try {
       this._logger.log(`Fetching all users`);
-
       const users = await paginate(
         this.prisma.user,
-        {},
+        {
+          where: {
+            name: {
+              contains: query.name || '',
+              mode: 'insensitive',
+            },
+          },
+        },
         { perPage: +query.perPage || 10, page: +query.page || 1 },
       );
 

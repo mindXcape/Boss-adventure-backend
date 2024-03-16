@@ -3,9 +3,13 @@ import { IsOptional, IsString } from 'class-validator';
 export class PaginateQueryDto {
   @IsString()
   @IsOptional()
-  page: number;
+  page: string;
 
   @IsString()
   @IsOptional()
-  perPage: number;
+  perPage: string;
+
+  @IsString()
+  @IsOptional()
+  name: string;
 }
