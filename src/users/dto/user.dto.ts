@@ -11,6 +11,7 @@ export class CreateUserDto {
   email: string;
 
   @IsString()
+  @IsOptional()
   @ApiProperty({
     description: 'Full Name of the user',
     example: 'John Doe',
@@ -34,6 +35,7 @@ export class CreateUserDto {
   profileImage: string;
 
   @IsString()
+  @IsOptional()
   @ApiProperty({
     description: 'Current status of the user',
     example: 'Active | Pending | Blocked | Inactive | Deleted',
@@ -41,6 +43,7 @@ export class CreateUserDto {
   status: string;
 
   @IsString()
+  @IsOptional()
   @ApiProperty({
     description: 'Country of the user',
     example: 'Nepal',
@@ -48,6 +51,7 @@ export class CreateUserDto {
   country: string;
 
   @IsString()
+  @IsOptional()
   @ApiProperty({
     description: 'State of the user',
     example: 'Bagmati',
@@ -55,6 +59,7 @@ export class CreateUserDto {
   state: string;
 
   @IsString()
+  @IsOptional()
   @ApiProperty({
     description: 'City of the user',
     example: 'Kathmandu',
@@ -62,6 +67,7 @@ export class CreateUserDto {
   city: string;
 
   @IsString()
+  @IsOptional()
   @ApiProperty({
     description: 'Address of the user',
     example: 'Koteshor - 17',
@@ -69,6 +75,7 @@ export class CreateUserDto {
   address: string;
 
   @IsString()
+  @IsOptional()
   @ApiProperty({
     description: 'Zip code of the user',
     example: '44600',
@@ -76,6 +83,7 @@ export class CreateUserDto {
   zipCode: string;
 
   @IsString()
+  @IsOptional()
   @ApiProperty({
     description: 'Company name of the user',
     example: 'ABC Pvt. Ltd.',
@@ -83,6 +91,7 @@ export class CreateUserDto {
   companyName: string;
 
   @IsString()
+  @IsOptional()
   @ApiProperty({
     description: 'Passport number of the user',
     example: 'CA22555',
@@ -90,6 +99,7 @@ export class CreateUserDto {
   passportNumber: string;
 
   @IsString()
+  @IsOptional()
   @ApiProperty({
     description: 'Occupation of the user',
     example: 'Sales',
