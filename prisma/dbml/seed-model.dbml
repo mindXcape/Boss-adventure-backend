@@ -82,8 +82,8 @@ Enum Status {
   BLOCKED
 }
 
-Ref: user_roles.userId > users.id
+Ref: user_roles.userId > users.id [delete: Cascade]
 
-Ref: addresses.userId - users.id
+Ref: addresses.userId - users.id [delete: Cascade]
 
-Ref: professional_profiles.userId - users.id
+Ref: professional_profiles.userId - users.id [delete: Cascade]

@@ -70,7 +70,7 @@ model User {
 model UserRole {
   userId  String
   roleId  Role
-  user    User    @relation(fields: [userId], references: [id])
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@id([userId, roleId])
   @@map("user_roles")
 }
@@ -83,7 +83,7 @@ model Address {
   city      String?
   address   String? 
   zipCode   String?
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("addresses")
 }
@@ -97,7 +97,7 @@ model ProfessionalProfile {
   citizenNumber   String?
   guide_license   String?
   nma             DateTime?
-  user            User      @relation(fields: [userId], references: [id])
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("professional_profiles")
 }
