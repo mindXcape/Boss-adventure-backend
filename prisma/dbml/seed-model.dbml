@@ -27,20 +27,63 @@ Table users {
   email String [unique, not null]
   phone String
   profileImage String
-  status String [default: 'active']
+  status Status [default: 'ACTIVE']
+  roles user_roles [not null]
+  dob DateTime
+  address addresses
+  professional professional_profiles
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+}
+
+Table user_roles {
+  userId String [not null]
+  roleId Role [not null]
+  user users [not null]
+
+  indexes {
+    (userId, roleId) [pk]
+  }
+}
+
+Table addresses {
+  id String [pk]
+  userId String [unique, not null]
   country String
   state String
   city String
   address String
   zipCode String
+  user users [not null]
+}
+
+Table professional_profiles {
+  id String [pk]
+  userId String [unique, not null]
   companyName String
-  occupation String
   passportNumber String
-  createdAt DateTime [default: `now()`, not null]
-  updatedAt DateTime [not null]
+  passportExpire DateTime
+  citizenNumber String
+  guide_license String
+  nma DateTime
+  user users [not null]
 }
 
 Enum Role {
   ADMIN
   USER
+  GUIDE
+  LEADER
 }
+
+Enum Status {
+  ACTIVE
+  INACTIVE
+  BLOCKED
+}
+
+Ref: user_roles.userId > users.id
+
+Ref: addresses.userId - users.id
+
+Ref: professional_profiles.userId - users.id
