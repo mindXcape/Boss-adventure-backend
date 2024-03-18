@@ -6,6 +6,7 @@ import { AppModule } from './app.module';
 import { CustomExceptionFilter } from './utils/exceptions/exception.filter';
 import { setupSwagger } from './swagger';
 import { AuthGuard } from './auth/guards/auth.global.guard';
+import multipart from '@fastify/multipart';
 
 async function bootstrap() {
   const logger = new Logger('bootstrap');
@@ -15,6 +16,7 @@ async function bootstrap() {
   );
   const reflector = app.get(Reflector);
   const port = process.env.PORT || 3000;
+  await app.register(multipart);
   await app.register(helmet);
   app.enableCors();
   app.useGlobalPipes(
