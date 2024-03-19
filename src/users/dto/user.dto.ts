@@ -1,5 +1,6 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { ApiProperty } from '@nestjs/swagger';
+import { Role, Status } from '@prisma/client';
 import { IsString, IsEmail, IsOptional } from 'class-validator';
 
 export class CreateUserDto {
@@ -29,7 +30,7 @@ export class CreateUserDto {
   @IsString()
   @IsOptional()
   @ApiProperty({
-    description: 'Profile image of the user',
+    description: 'Profile image url of the user',
     example: 'https://example.com/image.jpg',
   })
   profileImage: string;
@@ -40,7 +41,15 @@ export class CreateUserDto {
     description: 'Current status of the user',
     example: 'Active | Pending | Blocked | Inactive | Deleted',
   })
-  status: string;
+  status: Status;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    description: 'Date of birth of the user',
+    example: '2012-12-12',
+  })
+  dob: string;
 
   @IsString()
   @IsOptional()
@@ -101,10 +110,42 @@ export class CreateUserDto {
   @IsString()
   @IsOptional()
   @ApiProperty({
-    description: 'Occupation of the user',
-    example: 'Sales',
+    description: 'Passport expire date of the user',
+    example: '2024-05-04',
   })
-  occupation: string;
+  passportExpire: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    description: 'Citizen number of the user',
+    example: 'CA22555',
+  })
+  citizenNumber: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    description: 'Guide license of the user',
+    example: 'RAC78',
+  })
+  guide_license: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    description: 'nma date of a guide license',
+    example: '2083-1-1',
+  })
+  nma: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    description: 'Array of roles associated with the user',
+    example: 'USER',
+  })
+  role: Role;
 }
 
 export class UpdateUserDto extends PartialType(CreateUserDto) {}

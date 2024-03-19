@@ -9,28 +9,64 @@ export class UsersService {
   private readonly _logger = new Logger('User Services');
   constructor(private prisma: PrismaService) {}
 
-  async register(createUserDto: CreateUserDto) {
-    this._logger.log(`Registering new user: ${createUserDto?.email}`);
-
-    return this.prisma.user.create({
-      data: {
-        ...createUserDto,
-      },
-    });
-  }
-
   async create(createUserDto: CreateUserDto) {
     this._logger.log(`Creating new user: ${createUserDto?.email}`);
-    try {
-      return this.prisma.user.create({
-        data: {
-          ...createUserDto,
+    const {
+      name,
+      email,
+      status,
+      phone,
+      dob,
+      address,
+      citizenNumber,
+      city,
+      state,
+      country,
+      zipCode,
+      role,
+      companyName,
+      passportNumber,
+      passportExpire,
+      guide_license,
+      nma,
+    } = createUserDto;
+    this._logger.log(`Registering new user: ${createUserDto?.email}`);
+
+    const user = await this.prisma.user.create({
+      data: {
+        name,
+        email,
+        phone,
+        status,
+        dob,
+        address: {
+          create: {
+            address,
+            city,
+            state,
+            country,
+            zipCode,
+          },
         },
-      });
-    } catch (error) {
-      this._logger.error(error.message, error.stack);
-      throw new BadRequestException(error.message);
-    }
+        roles: {
+          create: {
+            roleId: role,
+          },
+        },
+        professional: {
+          create: {
+            companyName,
+            passportNumber,
+            passportExpire,
+            citizenNumber,
+            guide_license,
+            nma,
+          },
+        },
+      },
+    });
+
+    return user;
   }
 
   async findAll(query: PaginateQueryDto) {
@@ -71,17 +107,18 @@ export class UsersService {
 
   update(id: string, updateUserDto: UpdateUserDto) {
     this._logger.log(`Updating user: ${id}`);
-    try {
-      return this.prisma.user.update({
-        where: { id },
-        data: {
-          ...updateUserDto,
-        },
-      });
-    } catch (error) {
-      this._logger.error(error.message, error.stack);
-      throw new BadRequestException(error.message);
-    }
+    // try {
+    //   return this.prisma.user.update({
+    //     where: { id },
+    //     data: {
+    //       ...updateUserDto,
+    //     },
+    //   });
+    // } catch (error) {
+    //   this._logger.error(error.message, error.stack);
+    //   throw new BadRequestException(error.message);
+    // }
+    return null;
   }
 
   remove(id: string) {

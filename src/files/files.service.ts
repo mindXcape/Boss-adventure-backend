@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { FastifyReply } from 'fastify';
 import { AwsService } from 'src/aws/aws.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { randomImageName } from 'src/utils/imageName';
 
 @Injectable()
 export class FilesService {
@@ -9,10 +10,13 @@ export class FilesService {
 
   async uploadFile(req: any, res: FastifyReply<any>): Promise<any> {
     const data = await req['incomingFile'];
+    const fileName = randomImageName();
+    data.filename = fileName;
 
-    data.filename = data.filename.replaceAll(' ', '-');
     await this.awsService.uploadFiletoS3(data.file, data.filename);
 
-    res.send({ message: 'File uploaded successfully', statusCode: 200 });
+    const signedUrl = await this.awsService.getSignedUrlFromS3(fileName);
+
+    res.send({ data: { signedUrl, fileName }, statusCode: 200 });
   }
 }
