@@ -11,7 +11,6 @@ export class FilesController {
   @Public()
   @Post()
   async uploadFile(@Req() req, @Body() body: any, @Res() res) {
-    console.log('req', req.body);
     return await this.filesService.uploadFile(req, res);
   }
 }

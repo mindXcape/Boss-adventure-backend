@@ -76,10 +76,22 @@ export class UsersService {
         this.prisma.user,
         {
           where: {
+            roles: {
+              some: {
+                roleId: {
+                  in: [query.role] || [],
+                },
+              },
+            },
             name: {
               contains: query.name || '',
               mode: 'insensitive',
             },
+          },
+          include: {
+            address: true,
+            professional: true,
+            roles: true,
           },
         },
         { perPage: +query.perPage || 10, page: +query.page || 1 },
@@ -98,6 +110,11 @@ export class UsersService {
 
       return this.prisma.user.findUnique({
         where: { id },
+        include: {
+          address: true,
+          professional: true,
+          roles: true,
+        },
       });
     } catch (error) {
       this._logger.error(error.message, error.stack);
@@ -197,6 +214,11 @@ export class UsersService {
     try {
       return await this.prisma.user.findUnique({
         where: { email },
+        include: {
+          address: true,
+          professional: true,
+          roles: true,
+        },
       });
     } catch (error) {
       this._logger.error(error.message, error.stack);
