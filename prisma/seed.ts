@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { faker } from '@faker-js/faker';
 
 const prisma = new PrismaClient();
@@ -44,25 +44,40 @@ const loadAdmin = async () => {
 };
 
 const loadUsers = async () => {
-  const fakerUser = (): Prisma.UserCreateInput => {
-    return {
-      name: faker.person.firstName(),
-      address: faker.location.streetAddress(),
-      city: faker.location.city(),
-      state: faker.location.state(),
-      country: faker.location.country(),
-      companyName: faker.company.name(),
-      email: faker.internet.email(),
-      occupation: faker.person.jobType(),
-      zipCode: faker.location.zipCode(),
-      phone: faker.phone.number(),
-      status: faker.helpers.arrayElement(['ACTIVE', 'INACTIVE', 'PENDING', 'BLOCKED']),
-      profileImage: faker.image.avatar(),
-      passportNumber: faker.string.alphanumeric({ length: { min: 5, max: 10 } }),
-    };
-  };
   for (let i = 0; i < 100; i++) {
-    await prisma.user.create({ data: fakerUser() });
+    await prisma.user.create({
+      data: {
+        name: faker.person.firstName(),
+        email: faker.internet.email(),
+        phone: faker.phone.number(),
+        status: faker.helpers.arrayElement(['ACTIVE', 'INACTIVE', 'BLOCKED']),
+        dob: faker.date.past(),
+        address: {
+          create: {
+            address: faker.location.streetAddress(),
+            city: faker.location.city(),
+            state: faker.location.state(),
+            country: faker.location.country(),
+            zipCode: faker.location.zipCode(),
+          },
+        },
+        roles: {
+          create: {
+            roleId: faker.helpers.arrayElement(['ADMIN', 'USER', 'GUIDE', 'LEADER']),
+          },
+        },
+        professional: {
+          create: {
+            companyName: faker.company.name(),
+            passportNumber: faker.string.alphanumeric({ length: { min: 5, max: 10 } }),
+            passportExpire: faker.date.future(),
+            citizenNumber: faker.string.alphanumeric({ length: { min: 5, max: 10 } }),
+            guide_license: faker.string.alphanumeric({ length: { min: 5, max: 10 } }),
+            nma: faker.date.future(),
+          },
+        },
+      },
+    });
   }
 
   console.log('100 Users seed data loaded');

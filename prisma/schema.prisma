@@ -24,6 +24,14 @@ generator docs {
 enum Role {
   ADMIN
   USER
+  GUIDE
+  LEADER
+}
+
+enum Status {
+  ACTIVE
+  INACTIVE
+  BLOCKED
 }
 
 model Admin {
@@ -42,26 +50,54 @@ updatedAt         DateTime     @updatedAt
 @@map("admins")
 }
 
-// 
 model User {
-id                String       @id @default(uuid())
-name              String?
-email             String       @unique
-phone             String?
-profileImage      String?
-status            String?       @default("active")
-country           String?
-state             String? 
-city              String?
-address           String? 
-zipCode           String? 
-companyName       String?
-occupation        String?
-passportNumber    String?
+  id              String                @id @default(uuid())
+  name            String?
+  email           String                @unique
+  phone           String?
+  profileImage    String?
+  status          Status?               @default(ACTIVE)
+  roles           UserRole[]
+  dob             DateTime?
+  address         Address?
+  professional    ProfessionalProfile?
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
 
-createdAt         DateTime     @default(now())
-updatedAt         DateTime     @updatedAt
-
-@@map("users")
+  @@map("users")
 }
 
+model UserRole {
+  userId  String
+  roleId  Role
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@id([userId, roleId])
+  @@map("user_roles")
+}
+
+model Address {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  country   String?
+  state     String? 
+  city      String?
+  address   String? 
+  zipCode   String?
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("addresses")
+}
+
+model ProfessionalProfile {
+  id              String    @id @default(uuid())
+  userId          String    @unique
+  companyName     String?
+  passportNumber  String?
+  passportExpire  DateTime?
+  citizenNumber   String?
+  guide_license   String?
+  nma             DateTime?
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("professional_profiles")
+}

@@ -1,3 +1,4 @@
+import { Role } from '@prisma/client';
 import { IsOptional, IsString } from 'class-validator';
 
 export class PaginateQueryDto {
@@ -8,6 +9,10 @@ export class PaginateQueryDto {
   @IsString()
   @IsOptional()
   perPage: string;
+
+  @IsString()
+  @IsOptional()
+  role: Role;
 
   @IsString()
   @IsOptional()
