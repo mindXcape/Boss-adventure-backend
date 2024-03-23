@@ -1,6 +1,7 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { ApiProperty } from '@nestjs/swagger';
 import { Role, Status } from '@prisma/client';
+import { Transform } from 'class-transformer';
 import { IsString, IsEmail, IsOptional } from 'class-validator';
 
 export class CreateUserDto {
@@ -35,6 +36,7 @@ export class CreateUserDto {
   })
   profileImage: string;
 
+  @Transform(({ value }) => value.toUpperCase(), { toClassOnly: true })
   @IsString()
   @IsOptional()
   @ApiProperty({
@@ -139,6 +141,7 @@ export class CreateUserDto {
   })
   nma: string;
 
+  @Transform(({ value }) => value.toUpperCase(), { toClassOnly: true })
   @IsString()
   @IsOptional()
   @ApiProperty({

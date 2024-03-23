@@ -3,16 +3,18 @@ import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { paginate } from 'src/utils/paginate';
 import { PaginateQueryDto } from './dto/paginateUser.dto';
+import { AwsService } from 'src/aws/aws.service';
 
 @Injectable()
 export class UsersService {
   private readonly _logger = new Logger('User Services');
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private awsService: AwsService) {}
 
   async create(createUserDto: CreateUserDto) {
     this._logger.log(`Creating new user: ${createUserDto?.email}`);
     const {
       name,
+      profileImage,
       email,
       status,
       phone,
@@ -35,6 +37,7 @@ export class UsersService {
     const user = await this.prisma.user.create({
       data: {
         name,
+        profileImage,
         email,
         phone,
         status,
@@ -66,7 +69,12 @@ export class UsersService {
       },
     });
 
-    return user;
+    return {
+      ...user,
+      profileImage: user.profileImage
+        ? await this.awsService.getSignedUrlFromS3(user.profileImage)
+        : null,
+    };
   }
 
   async findAll(query: PaginateQueryDto) {
@@ -97,18 +105,30 @@ export class UsersService {
         { perPage: +query.perPage || 10, page: +query.page || 1 },
       );
 
-      return users;
+      const signedUsers = await users.rows.map(async (user: any) => {
+        return {
+          ...user,
+          profileImage: user?.profileImage
+            ? await this.awsService.getSignedUrlFromS3(user.profileImage)
+            : null,
+        };
+      });
+
+      return {
+        ...users,
+        rows: await Promise.all(signedUsers),
+      };
     } catch (error) {
       this._logger.error(error.message, error.stack);
       throw new BadRequestException(error.message);
     }
   }
 
-  findOne(id: string) {
+  async findOne(id: string) {
     try {
       this._logger.log(`Fetching user: ${id}`);
 
-      return this.prisma.user.findUnique({
+      const user = await this.prisma.user.findUnique({
         where: { id },
         include: {
           address: true,
@@ -116,6 +136,13 @@ export class UsersService {
           roles: true,
         },
       });
+
+      return {
+        ...user,
+        profileImage: user?.profileImage
+          ? await this.awsService.getSignedUrlFromS3(user.profileImage)
+          : null,
+      };
     } catch (error) {
       this._logger.error(error.message, error.stack);
       throw new BadRequestException(error.message);
@@ -132,11 +159,11 @@ export class UsersService {
       dob,
       address,
       citizenNumber,
+      profileImage,
       city,
       state,
       country,
       zipCode,
-      role,
       companyName,
       passportNumber,
       passportExpire,
@@ -156,7 +183,7 @@ export class UsersService {
 
       if (!user) throw new BadRequestException('User not found');
 
-      return this.prisma.user.update({
+      const updatedUser = await this.prisma.user.update({
         where: { id },
         include: {
           address: true,
@@ -169,6 +196,7 @@ export class UsersService {
           phone: phone || user.phone,
           status: status || user.status,
           dob: dob || user.dob,
+          profileImage: profileImage || user.profileImage,
           address: {
             update: {
               address: address || user.address.address,
@@ -190,6 +218,13 @@ export class UsersService {
           },
         },
       });
+
+      return {
+        ...updatedUser,
+        profileImage: updatedUser?.profileImage
+          ? await this.awsService.getSignedUrlFromS3(updatedUser.profileImage)
+          : null,
+      };
     } catch (error) {
       this._logger.error(error.message, error.stack);
       throw new BadRequestException(error.message);
@@ -212,7 +247,7 @@ export class UsersService {
   async findOneByEmail(email: string): Promise<any> {
     this._logger.log(`Fetching user by email: ${email} `);
     try {
-      return await this.prisma.user.findUnique({
+      const user = await this.prisma.user.findUnique({
         where: { email },
         include: {
           address: true,
@@ -220,6 +255,12 @@ export class UsersService {
           roles: true,
         },
       });
+      return {
+        ...user,
+        profileImage: user.profileImage
+          ? await this.awsService.getSignedUrlFromS3(user.profileImage)
+          : null,
+      };
     } catch (error) {
       this._logger.error(error.message, error.stack);
       throw new BadRequestException(error.message);
