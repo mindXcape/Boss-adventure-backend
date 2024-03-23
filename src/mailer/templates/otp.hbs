@@ -1,7 +1,31 @@
-<html>
-  <body style='font-family:Poppins,Helvetica,Arial,sans-serif;'>
-    <p>Hi {{name}},</p>
-    <br />
-    <p>Your OTP is <b>{{otp}}</b></p>
+<html lang='en'>
+  <head>
+    <meta charset='UTF-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <title>Verification code</title>
+  </head>
+  <body>
+    <div
+      style='font-family: Helvetica,Arial,sans-serif;min-width:1000px;overflow:auto;line-height:2'
+    >
+      <div style='margin:50px auto;width:70%;padding:20px 0'>
+        <div style='border-bottom:1px solid #eee'>
+          <a
+            href=''
+            style='font-size:1.4em;color: #16619d;text-decoration:none;font-weight:600'
+          >Boss Adventures</a>
+        </div>
+        <p style='font-size:1.1em'>Hi, {{name}}</p>
+        <p>Use the following verification code to complete your sign in. This verification code is
+          valid for 5 minutes.</p>
+        <h2
+          style='background: #16619d;margin: 0 auto;width: 50%;padding: 0 10px;color: #fff;border-radius: 4px;text-align:center'
+        >{{otp}}</h2>
+        <p style='font-size:0.9em;'>Regards,<br />
+          <span style='color: #aaa'>Boss Adventure Treks and Expeditions </span>
+        </p>
+        <hr style='border:none;border-top:1px solid #eee' />
+      </div>
+    </div>
   </body>
 </html>
