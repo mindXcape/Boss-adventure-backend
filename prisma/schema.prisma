@@ -26,6 +26,13 @@ enum Role {
   USER
   GUIDE
   LEADER
+  ACCOUNT
+  DRIVER
+  MANAGER
+  MD
+  SUPPORT
+  RECEPTIONIST
+
 }
 
 enum Status {
@@ -60,11 +67,23 @@ model User {
   roles           UserRole[]
   dob             DateTime?
   address         Address?
+  banckDetails    BankDetails[]
   professional    ProfessionalProfile?
   createdAt       DateTime              @default(now())
   updatedAt       DateTime              @updatedAt
 
   @@map("users")
+}
+
+model BankDetails{
+  id          String    @id @default(uuid())
+  userId      String    
+  bankName    String?
+  accountNo   String?
+  branch      String?
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("bank_details")
 }
 
 model UserRole {
@@ -95,6 +114,7 @@ model ProfessionalProfile {
   passportNumber  String?
   passportExpire  DateTime?
   citizenNumber   String?
+  panNumber       String?      
   guide_license   String?
   nma             DateTime?
   user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)

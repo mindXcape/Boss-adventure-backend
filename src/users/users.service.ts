@@ -1,9 +1,10 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
+import { CreateBankDto, CreateUserDto, UpdateUserDto } from './dto/user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { paginate } from 'src/utils/paginate';
 import { PaginateQueryDto } from './dto/paginateUser.dto';
 import { AwsService } from 'src/aws/aws.service';
+import { async } from 'rxjs';
 
 @Injectable()
 export class UsersService {
@@ -16,6 +17,7 @@ export class UsersService {
       name,
       profileImage,
       email,
+      panNumber,
       status,
       phone,
       dob,
@@ -59,6 +61,7 @@ export class UsersService {
         professional: {
           create: {
             companyName,
+            panNumber,
             passportNumber,
             passportExpire,
             citizenNumber,
@@ -100,12 +103,13 @@ export class UsersService {
             address: true,
             professional: true,
             roles: true,
+            bankDetails: true,
           },
         },
         { perPage: +query.perPage || 10, page: +query.page || 1 },
       );
 
-      const signedUsers = await users.rows.map(async (user: any) => {
+      const signedUsers = users.rows.map(async (user: any) => {
         return {
           ...user,
           profileImage: user?.profileImage
@@ -134,6 +138,7 @@ export class UsersService {
           address: true,
           professional: true,
           roles: true,
+          banckDetails: true,
         },
       });
 
@@ -237,6 +242,60 @@ export class UsersService {
     try {
       return this.prisma.user.delete({
         where: { id },
+      });
+    } catch (error) {
+      this._logger.error(error.message, error.stack);
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  async createOneBank(userId: string, bank: CreateBankDto): Promise<any> {
+    this._logger.log(`Creating new address for user: ${userId}`);
+    try {
+      await this.prisma.bankDetails.create({
+        data: {
+          userId: userId,
+          branch: bank.branch,
+          accountNo: bank.accountNo,
+          bankName: bank.bankName,
+        },
+      });
+
+      return await this.prisma.user.findUnique({
+        where: {
+          id: userId,
+        },
+        include: {
+          address: true,
+          professional: true,
+          roles: true,
+          banckDetails: true,
+        },
+      });
+    } catch (error) {
+      this._logger.error(error.message, error.stack);
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  async createManyBank(userId: string, banks: CreateBankDto[]) {
+    this._logger.log(`Creating new addresses for user: ${userId}`);
+
+    try {
+      banks.forEach(async bank => {
+        await this.createOneBank(userId, bank);
+      });
+
+      return await this.prisma.user.findUnique({
+        where: {
+          id: userId,
+        },
+        include: {
+          address: true,
+          professional: true,
+          roles: true,
+          banckDetails: true,
+        },
       });
     } catch (error) {
       this._logger.error(error.message, error.stack);

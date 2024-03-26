@@ -4,6 +4,30 @@ import { Role, Status } from '@prisma/client';
 import { Transform } from 'class-transformer';
 import { IsString, IsEmail, IsOptional } from 'class-validator';
 
+export class CreateBankDto {
+  @IsString()
+  @ApiProperty({
+    description: 'NIC Asia',
+    example: 'John Doe',
+  })
+  bankName: string;
+
+  @IsString()
+  @ApiProperty({
+    description: 'Account number',
+    example: '208909875948237509',
+  })
+  accountNo: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    description: 'Account number',
+    example: '208909875948237509',
+  })
+  branch: string;
+}
+
 export class CreateUserDto {
   @IsEmail()
   @ApiProperty({
@@ -27,6 +51,14 @@ export class CreateUserDto {
     example: '9808986617',
   })
   phone: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    description: 'Pan number of user',
+    example: 'afa',
+  })
+  panNumber: string;
 
   @IsString()
   @IsOptional()

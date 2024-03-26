@@ -8,9 +8,10 @@ import {
   Delete,
   UseGuards,
   Query,
+  BadRequestException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
+import { CreateBankDto, CreateUserDto, UpdateUserDto } from './dto/user.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.auth.guard';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RoleGuard } from 'src/auth/guards/role.guard';
@@ -87,5 +88,36 @@ export class UsersController {
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   remove(@Param('id') id: string) {
     return this.usersService.remove(id);
+  }
+
+  @Roles('ADMIN')
+  @Post(':userId/bank')
+  @ApiOperation({ summary: 'Add new bank details to user' })
+  @ApiResponse({
+    status: 200,
+    description: 'The found record',
+    type: CreateUserDto,
+  })
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
+  createOneBank(@Param('userId') userId: string, @Body() createBankDto: CreateBankDto) {
+    if (!userId) {
+      throw new BadRequestException('Id is required in params');
+    }
+    return this.usersService.createOneBank(userId, createBankDto);
+  }
+  @Roles('ADMIN')
+  @Post(':userId/banks')
+  @ApiOperation({ summary: 'Add many new banks details to user' })
+  @ApiResponse({
+    status: 200,
+    description: 'The found record',
+    type: CreateUserDto,
+  })
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
+  createManyBank(@Param('userId') userId: string, @Body() createBankDto: Array<CreateBankDto>) {
+    if (!userId) {
+      throw new BadRequestException('Id is required in params');
+    }
+    return this.usersService.createManyBank(userId, createBankDto);
   }
 }
