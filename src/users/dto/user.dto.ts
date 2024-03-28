@@ -7,6 +7,13 @@ import { IsString, IsEmail, IsOptional } from 'class-validator';
 export class CreateBankDto {
   @IsString()
   @ApiProperty({
+    description: 'Label of the bank account',
+    example: 'Primary bank | Salary account | Saving account',
+  })
+  label: string;
+
+  @IsString()
+  @ApiProperty({
     description: 'NIC Asia',
     example: 'John Doe',
   })

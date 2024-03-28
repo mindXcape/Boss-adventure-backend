@@ -76,6 +76,14 @@ const loadUsers = async () => {
             nma: faker.date.future(),
           },
         },
+        bankDetails: {
+          create: {
+            bankName: faker.finance.accountName(),
+            accountNo: faker.finance.accountNumber(),
+            branch: faker.finance.accountName(),
+            label: faker.helpers.arrayElement(['SAVINGS', 'CURRENT', 'SALARY']),
+          },
+        },
       },
     });
   }

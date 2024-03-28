@@ -4,7 +4,6 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { paginate } from 'src/utils/paginate';
 import { PaginateQueryDto } from './dto/paginateUser.dto';
 import { AwsService } from 'src/aws/aws.service';
-import { async } from 'rxjs';
 
 @Injectable()
 export class UsersService {
@@ -90,7 +89,7 @@ export class UsersService {
             roles: {
               some: {
                 roleId: {
-                  in: [query.role] || [],
+                  in: [query.role],
                 },
               },
             },
@@ -103,7 +102,6 @@ export class UsersService {
             address: true,
             professional: true,
             roles: true,
-            bankDetails: true,
           },
         },
         { perPage: +query.perPage || 10, page: +query.page || 1 },
@@ -138,7 +136,7 @@ export class UsersService {
           address: true,
           professional: true,
           roles: true,
-          banckDetails: true,
+          bankDetails: true,
         },
       });
 
@@ -234,7 +232,6 @@ export class UsersService {
       this._logger.error(error.message, error.stack);
       throw new BadRequestException(error.message);
     }
-    return null;
   }
 
   remove(id: string) {
@@ -251,13 +248,21 @@ export class UsersService {
 
   async createOneBank(userId: string, bank: CreateBankDto): Promise<any> {
     this._logger.log(`Creating new address for user: ${userId}`);
+
     try {
+      const user = await this.prisma.user.findUnique({
+        where: {
+          id: userId,
+        },
+      });
+      if (!user) throw new BadRequestException('User not found');
       await this.prisma.bankDetails.create({
         data: {
           userId: userId,
           branch: bank.branch,
           accountNo: bank.accountNo,
           bankName: bank.bankName,
+          label: bank.label,
         },
       });
 
@@ -269,7 +274,7 @@ export class UsersService {
           address: true,
           professional: true,
           roles: true,
-          banckDetails: true,
+          bankDetails: true,
         },
       });
     } catch (error) {
@@ -294,7 +299,7 @@ export class UsersService {
           address: true,
           professional: true,
           roles: true,
-          banckDetails: true,
+          bankDetails: true,
         },
       });
     } catch (error) {

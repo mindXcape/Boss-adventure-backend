@@ -67,7 +67,7 @@ model User {
   roles           UserRole[]
   dob             DateTime?
   address         Address?
-  banckDetails    BankDetails[]
+  bankDetails    BankDetails[]
   professional    ProfessionalProfile?
   createdAt       DateTime              @default(now())
   updatedAt       DateTime              @updatedAt
@@ -81,6 +81,7 @@ model BankDetails{
   bankName    String?
   accountNo   String?
   branch      String?
+  label       String?
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("bank_details")
