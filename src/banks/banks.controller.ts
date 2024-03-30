@@ -8,12 +8,12 @@ import { Public } from 'src/common/decorators/public.decorator';
 import { Roles } from 'src/common/decorators/roles.decorator';
 
 @ApiBearerAuth('access-token')
-@UseGuards(JwtAuthGuard, RoleGuard)
 @ApiTags('Banks')
 @Controller('banks')
 export class BanksController {
   constructor(private readonly banksService: BanksService) {}
 
+  @UseGuards(JwtAuthGuard, RoleGuard)
   @Roles('ADMIN')
   @Post()
   @ApiOperation({ summary: 'Create bank user' })
@@ -40,6 +40,7 @@ export class BanksController {
     return this.banksService.findAll();
   }
 
+  @UseGuards(JwtAuthGuard, RoleGuard)
   @Patch(':id')
   @Roles('ADMIN')
   @ApiOperation({ summary: 'Update a bank' })
@@ -53,6 +54,7 @@ export class BanksController {
     return this.banksService.update(id, updateBankDto);
   }
 
+  @UseGuards(JwtAuthGuard, RoleGuard)
   @Roles('ADMIN')
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a bank' })
