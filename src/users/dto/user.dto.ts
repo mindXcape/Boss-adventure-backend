@@ -1,6 +1,6 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { ApiProperty } from '@nestjs/swagger';
-import { Role, Status } from '@prisma/client';
+import { Designation, Role, Status } from '@prisma/client';
 import { Transform } from 'class-transformer';
 import { IsString, IsEmail, IsOptional } from 'class-validator';
 
@@ -155,6 +155,30 @@ export class CreateUserDto {
     example: '2024-05-04',
   })
   passportExpire: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    description: 'Uuid of the bank account',
+    example: '2124`',
+  })
+  bankId: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    description: 'Account number',
+    example: 'CA22555',
+  })
+  accountNumber: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    description: 'Designation of the user',
+    example: 'ACCOUNT',
+  })
+  designation: Designation;
 
   @IsString()
   @IsOptional()

@@ -8,6 +8,7 @@ import { UsersModule } from './users/users.module';
 import { AdminsModule } from './admins/admins.module';
 import { AwsModule } from './aws/aws.module';
 import { FilesModule } from './files/files.module';
+import { BanksModule } from './banks/banks.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { FilesModule } from './files/files.module';
     AdminsModule,
     AwsModule,
     FilesModule,
+    BanksModule,
   ],
 })
 export class AppModule {}

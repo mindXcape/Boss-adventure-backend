@@ -23,9 +23,12 @@ generator docs {
 
 enum Role {
   ADMIN
-  USER
+  CLIENT
   GUIDE
   LEADER
+}
+
+enum Designation {
   ACCOUNT
   DRIVER
   MANAGER
@@ -46,7 +49,7 @@ name              String
 email             String       @unique
 phone             String?
 profileImage      String?
-roles             Role[]       @default([USER])
+roles             Role[]       @default([CLIENT])
 isActive          Boolean      @default(true)
 isBlocked         Boolean      @default(false)
 lastLoggedIn      DateTime?    @default(now())
@@ -66,30 +69,33 @@ model User {
   roles           UserRole[]
   dob             DateTime?
   address         Address?
-  bankDetails    BankDetails[]
+  bankId          String?
+  bank            Bank?                  @relation(fields: [bankId], references: [id])
   professional    ProfessionalProfile?
+  accountNumber   String?
+  designation     Designation?
   createdAt       DateTime              @default(now())
   updatedAt       DateTime              @updatedAt
 
   @@map("users")
 }
 
-model BankDetails{
+model Bank{
   id          String    @id @default(uuid())
-  userId      String    
-  bankName    String?
-  accountNo   String?
-  branch      String?
-  label       String?
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String?
+  class       String?
+  user        User[]
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
 
-  @@map("bank_details")
+  @@map("banks")
 }
 
 model UserRole {
   userId  String
   roleId  Role
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@id([userId, roleId])
   @@map("user_roles")
 }
