@@ -18,12 +18,15 @@ export class UsersService {
       profileImage,
       email,
       panNumber,
+      bankId,
+      accountNumber,
       status,
       phone,
       dob,
       address,
       citizenNumber,
       city,
+      designation,
       state,
       country,
       zipCode,
@@ -45,6 +48,9 @@ export class UsersService {
           phone,
           status,
           dob,
+          designation,
+          accountNumber,
+          bankId,
           address: {
             create: {
               address,
@@ -70,6 +76,12 @@ export class UsersService {
               nma,
             },
           },
+        },
+        include: {
+          address: true,
+          professional: true,
+          roles: true,
+          bank: true,
         },
       });
 
@@ -108,6 +120,13 @@ export class UsersService {
             address: true,
             professional: true,
             roles: true,
+            bank: {
+              select: {
+                id: true,
+                name: true,
+                class: true,
+              },
+            },
           },
         },
         { perPage: +query.perPage || 10, page: +query.page || 1 },
@@ -142,7 +161,13 @@ export class UsersService {
           address: true,
           professional: true,
           roles: true,
-          bankDetails: true,
+          bank: {
+            select: {
+              id: true,
+              name: true,
+              class: true,
+            },
+          },
         },
       });
 
@@ -175,6 +200,8 @@ export class UsersService {
       zipCode,
       companyName,
       passportNumber,
+      accountNumber,
+      bankId,
       passportExpire,
       guide_license,
       nma,
@@ -197,6 +224,7 @@ export class UsersService {
         include: {
           address: true,
           professional: true,
+          bank: true,
           roles: true,
         },
         data: {
@@ -206,6 +234,8 @@ export class UsersService {
           status: status || user.status,
           dob: dob || user.dob,
           profileImage: profileImage || user.profileImage,
+          bankId: bankId || user.bankId,
+          accountNumber: accountNumber || user.accountNumber,
           address: {
             update: {
               address: address || user.address.address,
@@ -255,6 +285,7 @@ export class UsersService {
   async createOneBank(userId: string, bank: CreateBankDto): Promise<any> {
     this._logger.log(`Creating new address for user: ${userId}`);
 
+    /*
     try {
       const user = await this.prisma.user.findUnique({
         where: {
@@ -287,10 +318,13 @@ export class UsersService {
       this._logger.error(error.message, error.stack);
       throw new BadRequestException(error.message);
     }
+    */
+    return null;
   }
 
   async createManyBank(userId: string, banks: CreateBankDto[]) {
     this._logger.log(`Creating new addresses for user: ${userId}`);
+    /*
 
     try {
       banks.forEach(async bank => {
@@ -312,6 +346,8 @@ export class UsersService {
       this._logger.error(error.message, error.stack);
       throw new BadRequestException(error.message);
     }
+    */
+    return null;
   }
 
   async findOneByEmail(email: string): Promise<any> {
@@ -323,6 +359,7 @@ export class UsersService {
           address: true,
           professional: true,
           roles: true,
+          bank: true,
         },
       });
       return {
