@@ -32,7 +32,6 @@ enum Role {
   MD
   SUPPORT
   RECEPTIONIST
-
 }
 
 enum Status {

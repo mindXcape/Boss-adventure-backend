@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Upload } from '@aws-sdk/lib-storage';
 import { DeleteObjectCommand, GetObjectCommand, S3 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
@@ -6,6 +6,7 @@ import * as stream from 'stream';
 
 @Injectable()
 export class AwsService {
+  private readonly _logger = new Logger('Aws Services');
   async uploadFiletoS3(data: any, filename: string) {
     const streams = new stream.PassThrough();
     try {
@@ -28,6 +29,7 @@ export class AwsService {
         },
       });
 
+      this._logger.log(`Uploading file to S3: ${filename}`);
       data.pipe(streams);
       await uploadToS3.done();
     } catch (e) {
@@ -69,6 +71,7 @@ export class AwsService {
 
     try {
       await s3.send(new DeleteObjectCommand(params));
+      this._logger.log(`Deleted file from S3: ${filename}`);
       return true;
     } catch (e) {
       console.log(e);

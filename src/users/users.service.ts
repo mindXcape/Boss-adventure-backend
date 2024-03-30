@@ -12,6 +12,7 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto) {
     this._logger.log(`Creating new user: ${createUserDto?.email}`);
+
     const {
       name,
       profileImage,
@@ -33,50 +34,55 @@ export class UsersService {
       guide_license,
       nma,
     } = createUserDto;
-    this._logger.log(`Registering new user: ${createUserDto?.email}`);
+    try {
+      this._logger.log(`Registering new user: ${createUserDto?.email}`);
 
-    const user = await this.prisma.user.create({
-      data: {
-        name,
-        profileImage,
-        email,
-        phone,
-        status,
-        dob,
-        address: {
-          create: {
-            address,
-            city,
-            state,
-            country,
-            zipCode,
+      const user = await this.prisma.user.create({
+        data: {
+          name,
+          profileImage,
+          email,
+          phone,
+          status,
+          dob,
+          address: {
+            create: {
+              address,
+              city,
+              state,
+              country,
+              zipCode,
+            },
+          },
+          roles: {
+            create: {
+              roleId: role,
+            },
+          },
+          professional: {
+            create: {
+              companyName,
+              panNumber,
+              passportNumber,
+              passportExpire,
+              citizenNumber,
+              guide_license,
+              nma,
+            },
           },
         },
-        roles: {
-          create: {
-            roleId: role,
-          },
-        },
-        professional: {
-          create: {
-            companyName,
-            panNumber,
-            passportNumber,
-            passportExpire,
-            citizenNumber,
-            guide_license,
-            nma,
-          },
-        },
-      },
-    });
+      });
 
-    return {
-      ...user,
-      profileImage: user.profileImage
-        ? await this.awsService.getSignedUrlFromS3(user.profileImage)
-        : null,
-    };
+      return {
+        ...user,
+        profileImage: user.profileImage
+          ? await this.awsService.getSignedUrlFromS3(user.profileImage)
+          : null,
+      };
+    } catch (error) {
+      await this.awsService.deleteFileFromS3(profileImage);
+      throw new BadRequestException(error.message);
+    }
   }
 
   async findAll(query: PaginateQueryDto) {

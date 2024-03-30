@@ -9,7 +9,6 @@ export class UploadGuard implements CanActivate {
     if (!isMultipart) throw new BadRequestException('multipart/form-data expected.');
 
     const file = await req.file();
-    console.log('filePath', req);
     if (!file) throw new BadRequestException('file expected');
 
     const fileSizeLimit = 5 * 1024 * 1024; // Adjust the file size limit as needed
