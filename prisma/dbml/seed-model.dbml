@@ -105,7 +105,7 @@ Enum Status {
   BLOCKED
 }
 
-Ref: users.bankId > banks.id
+Ref: users.bankId > banks.id [delete: Set Null]
 
 Ref: user_roles.userId > users.id [delete: Cascade]
 

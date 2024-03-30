@@ -70,7 +70,7 @@ model User {
   dob             DateTime?
   address         Address?
   bankId          String?
-  bank            Bank?                  @relation(fields: [bankId], references: [id])
+  bank            Bank?                  @relation(fields: [bankId], references: [id], onDelete: SetNull)
   professional    ProfessionalProfile?
   accountNumber   String?
   designation     Designation?

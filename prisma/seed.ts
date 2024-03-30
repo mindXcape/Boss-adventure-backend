@@ -133,9 +133,13 @@ const loadUsers = async () => {
 };
 
 async function main() {
-  await loadAdmin();
-  await loadBanks();
-  await loadUsers();
+  if (process.env.NODE_ENV === 'production') {
+    await loadBanks();
+  } else {
+    await loadAdmin();
+    await loadBanks();
+    await loadUsers();
+  }
 }
 
 main()
