@@ -205,6 +205,7 @@ export class UsersService {
       passportExpire,
       guide_license,
       nma,
+      role,
     } = updateUserDto;
 
     try {
@@ -243,6 +244,14 @@ export class UsersService {
               state: state || user.address.state,
               country: country || user.address.country,
               zipCode: zipCode || user.address.zipCode,
+            },
+          },
+          roles: {
+            deleteMany: { userId: id },
+            createMany: {
+              data: {
+                roleId: role || user.roles[0].roleId,
+              },
             },
           },
           professional: {
