@@ -95,6 +95,9 @@ export class HotelsService {
           branch: true,
         },
       });
+      if (!hotel) {
+        throw new BadRequestException('Hotel does not exist');
+      }
       const branches = await this.getSignedUrl(hotel.branch);
 
       return {
@@ -201,6 +204,24 @@ export class HotelsService {
       return signedBranches;
     } catch (error) {
       this._logger.error(`Error while fetching all branches: ${error}`);
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  async getBranch(branchId: string) {
+    try {
+      this._logger.log(`Fetching branch with id: ${branchId}`);
+      const branch = await this.prismaService.hotelBranch.findUnique({
+        where: { id: branchId },
+        include: { hotel: { select: { name: true } } },
+      });
+      if (!branch) {
+        throw new BadRequestException('Branch does not exist');
+      }
+      const signedBranch = await this.getSignedUrl(branch);
+      return signedBranch;
+    } catch (error) {
+      this._logger.error(`Error while fetching branch: ${error}`);
       throw new BadRequestException(error.message);
     }
   }

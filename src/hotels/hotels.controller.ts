@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  BadRequestException,
+} from '@nestjs/common';
 import { HotelsService } from './hotels.service';
 import { CreateHotelBranchDto, CreateHotelDto } from './dto/create-hotel.dto';
 import { UpdateHotelBranchDto, UpdateHotelDto } from './dto/update-hotel.dto';
@@ -64,6 +74,22 @@ export class HotelsController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.hotelsService.findOne(id);
+  }
+
+  @Public()
+  @ApiOperation({ summary: 'Get a Branch' })
+  @ApiResponse({
+    status: 200,
+    description: 'The found record',
+    type: CreateHotelDto,
+  })
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
+  @Get('branches/:id')
+  findOneBranch(@Param('id') id: string) {
+    if (!id) {
+      throw new BadRequestException('Branch id is required');
+    }
+    return this.hotelsService.getBranch(id);
   }
 
   @UseGuards(JwtAuthGuard, RoleGuard)
