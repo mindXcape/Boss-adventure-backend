@@ -12,7 +12,7 @@ export class HotelsService {
     private readonly awsService: AwsService,
   ) {}
 
-  async getSignedUrl(items: any[] | any) {
+  private async getSignedUrl(items: any[] | any) {
     if (Array.isArray(items)) {
       return await Promise.all(
         items.map(async item => {
