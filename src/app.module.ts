@@ -9,6 +9,8 @@ import { AdminsModule } from './admins/admins.module';
 import { AwsModule } from './aws/aws.module';
 import { FilesModule } from './files/files.module';
 import { BanksModule } from './banks/banks.module';
+import { HotelsModule } from './hotels/hotels.module';
+import { LodgesModule } from './lodges/lodges.module';
 
 @Module({
   imports: [
@@ -31,6 +33,8 @@ import { BanksModule } from './banks/banks.module';
     AwsModule,
     FilesModule,
     BanksModule,
+    HotelsModule,
+    LodgesModule,
   ],
 })
 export class AppModule {}

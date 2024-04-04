@@ -37,7 +37,7 @@ export class AwsService {
     }
   }
 
-  async getSignedUrlFromS3(filename: string) {
+  async getSignedUrlFromS3(filename: string, time?: number) {
     const s3 = new S3({
       credentials: {
         accessKeyId: process.env.S3_ACCESS_KEY_ID,
@@ -51,7 +51,9 @@ export class AwsService {
       Key: filename,
     };
 
-    const url = await getSignedUrl(s3, new GetObjectCommand(params), { expiresIn: 60 * 60 * 5 }); // 5 Hrs
+    const url = await getSignedUrl(s3, new GetObjectCommand(params), {
+      expiresIn: time || 60 * 60 * 5,
+    }); // 5 Hrs
     return url;
   }
 
@@ -70,8 +72,8 @@ export class AwsService {
     };
 
     try {
-      await s3.send(new DeleteObjectCommand(params));
       this._logger.log(`Deleted file from S3: ${filename}`);
+      await s3.send(new DeleteObjectCommand(params));
       return true;
     } catch (e) {
       console.log(e);

@@ -1,1 +1,3 @@
 - Role based query
+- Send user with signed url image url
+- Create endpoint to get all the branches
