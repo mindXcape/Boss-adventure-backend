@@ -68,7 +68,7 @@ export class AuthService {
     return {
       ...admin,
       profileImage: admin.profileImage
-        ? await this.awsService.getSignedUrlFromS3(admin.profileImage, 30 * 24 * 60 * 60)
+        ? await this.awsService.getSignedUrlFromS3(admin.profileImage, 7 * 24 * 60 * 60)
         : admin.profileImage, // expire in 7 days
       access_token: this.jwtService.sign(payload),
       refresh_token: this.jwtService.sign(payload, {
