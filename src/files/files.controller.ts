@@ -2,8 +2,10 @@ import { Body, Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { FilesService } from './files.service';
 import { UploadGuard } from './guards/upload.guard';
 import { Public } from 'src/common/decorators/public.decorator';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 @Controller('files')
+@ApiTags('Files')
 @UseGuards(UploadGuard)
 export class FilesController {
   constructor(private readonly filesService: FilesService) {}

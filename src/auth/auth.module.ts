@@ -5,6 +5,7 @@ import { AuthService } from './auth.service';
 import { JWTStrategy, RefreshJWTStrategy, LocalStrategy } from './strategies';
 import { MailModule } from 'src/mailer/mailer.module';
 import { AdminsService } from 'src/admins/admins.service';
+import { AwsService } from 'src/aws/aws.service';
 
 @Module({
   imports: [
@@ -15,6 +16,13 @@ import { AdminsService } from 'src/admins/admins.service';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, AdminsService, LocalStrategy, JWTStrategy, RefreshJWTStrategy],
+  providers: [
+    AuthService,
+    AwsService,
+    AdminsService,
+    LocalStrategy,
+    JWTStrategy,
+    RefreshJWTStrategy,
+  ],
 })
 export class AuthModule {}

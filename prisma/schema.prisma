@@ -44,86 +44,153 @@ enum Status {
 }
 
 model Admin {
-id                String       @id @default(uuid())
-name              String
-email             String       @unique
-phone             String?
-profileImage      String?
-roles             Role[]       @default([CLIENT])
-isActive          Boolean      @default(true)
-isBlocked         Boolean      @default(false)
-lastLoggedIn      DateTime?    @default(now())
-createdAt         DateTime     @default(now())
-updatedAt         DateTime     @updatedAt
+  id           String    @id @default(uuid())
+  name         String
+  email        String    @unique
+  phone        String?
+  profileImage String?
+  roles        Role[]    @default([CLIENT])
+  isActive     Boolean   @default(true)
+  isBlocked    Boolean   @default(false)
+  lastLoggedIn DateTime? @default(now())
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
-@@map("admins")
+  @@map("admins")
 }
 
 model User {
-  id              String                @id @default(uuid())
-  name            String?
-  email           String                @unique
-  phone           String?
-  profileImage    String?
-  status          Status?               @default(ACTIVE)
-  roles           UserRole[]
-  dob             DateTime?
-  address         Address?
-  bankId          String?
-  bank            Bank?                  @relation(fields: [bankId], references: [id], onDelete: SetNull)
-  professional    ProfessionalProfile?
-  accountNumber   String?
-  designation     Designation?
-  createdAt       DateTime              @default(now())
-  updatedAt       DateTime              @updatedAt
+  id            String               @id @default(uuid())
+  name          String?
+  email         String               @unique
+  phone         String?
+  profileImage  String?
+  status        Status?              @default(ACTIVE)
+  roles         UserRole[]
+  dob           DateTime?
+  address       Address?
+  bankId        String?
+  bank          Bank?                @relation(fields: [bankId], references: [id], onDelete: SetNull)
+  professional  ProfessionalProfile?
+  accountNumber String?
+  designation   Designation?
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
 
   @@map("users")
 }
 
-model Bank{
-  id          String    @id @default(uuid())
-  name        String?
-  class       String?
-  user        User[]
-  createdAt       DateTime              @default(now())
-  updatedAt       DateTime              @updatedAt
+model Bank {
+  id        String   @id @default(uuid())
+  name      String?
+  class     String?
+  user      User[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("banks")
 }
 
 model UserRole {
-  userId  String
-  roleId  Role
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  roleId Role
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, roleId])
   @@map("user_roles")
 }
 
 model Address {
-  id        String   @id @default(uuid())
-  userId    String   @unique
-  country   String?
-  state     String? 
-  city      String?
-  address   String? 
-  zipCode   String?
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id      String  @id @default(uuid())
+  userId  String  @unique
+  country String?
+  state   String?
+  city    String?
+  address String?
+  zipCode String?
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("addresses")
 }
 
 model ProfessionalProfile {
-  id              String    @id @default(uuid())
-  userId          String    @unique
-  companyName     String?
-  passportNumber  String?
-  passportExpire  DateTime?
-  citizenNumber   String?
-  panNumber       String?      
-  guide_license   String?
-  nma             DateTime?
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String    @id @default(uuid())
+  userId         String    @unique
+  companyName    String?
+  passportNumber String?
+  passportExpire DateTime?
+  citizenNumber  String?
+  panNumber      String?
+  guide_license  String?
+  nma            DateTime?
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("professional_profiles")
+}
+
+model Hotel {
+  id   String  @id @default(uuid())
+  name String?
+
+  branch    HotelBranch[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@map("hotels")
+}
+
+model HotelBranch {
+  id      String  @id @default(uuid())
+  name    String?
+  image   String?
+  state   String?
+  city    String?
+  address String?
+  phone   String?
+
+  // Poc stand for point of contact 
+  poc            String?
+  pocPhone       String?
+  pocDesignation String?
+
+  email   String?
+  hotel   Hotel   @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  hotelId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("hotel_branches")
+}
+
+model Lodge {
+  id   String  @id @default(uuid())
+  name String?
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  LodgeBranch LodgeBranch[]
+
+  @@map("lodges")
+}
+
+model LodgeBranch {
+  id             String  @id @default(uuid())
+  name           String?
+  image          String?
+  state          String?
+  city           String?
+  address        String?
+  phone          String?
+  poc            String?
+  pocPhone       String?
+  pocDesignation String?
+  email          String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lodge     Lodge    @relation(fields: [lodgeId], references: [id], onDelete: Cascade)
+  lodgeId   String
+
+  @@map("lodge_branches")
 }

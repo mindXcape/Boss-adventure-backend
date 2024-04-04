@@ -5,6 +5,7 @@ import { MailService } from 'src/mailer/mailer.service';
 import { AuthDto } from './dto';
 import { AdminsService } from 'src/admins/admins.service';
 import { CreateAdminDto } from 'src/admins/dto/create-admin.dto';
+import { AwsService } from 'src/aws/aws.service';
 
 @Injectable()
 export class AuthService {
@@ -13,6 +14,7 @@ export class AuthService {
     private jwtService: JwtService,
     private adminService: AdminsService,
     private mailService: MailService,
+    private awsService: AwsService,
   ) {}
 
   async validateUser(email: string, otp: string): Promise<CreateAdminDto> {
@@ -65,6 +67,9 @@ export class AuthService {
     };
     return {
       ...admin,
+      profileImage: admin.profileImage
+        ? await this.awsService.getSignedUrlFromS3(admin.profileImage, 30 * 24 * 60 * 60)
+        : admin.profileImage, // expire in 7 days
       access_token: this.jwtService.sign(payload),
       refresh_token: this.jwtService.sign(payload, {
         expiresIn: +process.env.JWT_EXPIRATION_LONG_TIME,
