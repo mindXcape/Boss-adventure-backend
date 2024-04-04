@@ -49,7 +49,7 @@ export class LodgesController {
   })
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.lodgesService.findOne(+id);
+    return this.lodgesService.findOne(id);
   }
 
   @UseGuards(JwtAuthGuard, RoleGuard)
@@ -62,7 +62,7 @@ export class LodgesController {
   })
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateLodgeDto: UpdateLodgeDto) {
-    return this.lodgesService.update(+id, updateLodgeDto);
+    return this.lodgesService.update(id, updateLodgeDto);
   }
 
   @UseGuards(JwtAuthGuard, RoleGuard)
@@ -76,6 +76,6 @@ export class LodgesController {
   })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   remove(@Param('id') id: string) {
-    return this.lodgesService.remove(+id);
+    return this.lodgesService.remove(id);
   }
 }
