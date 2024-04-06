@@ -27,6 +27,7 @@ export class HotelsController {
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Roles('ADMIN')
   @Post()
+  @ApiOperation({ summary: 'Create new Hotel' })
   @ApiResponse({
     status: 201,
     description: 'The found record',
@@ -64,7 +65,7 @@ export class HotelsController {
   }
 
   @Public()
-  @ApiOperation({ summary: 'Get a Hotel' })
+  @ApiOperation({ summary: 'Find a Hotel' })
   @ApiResponse({
     status: 200,
     description: 'The found record',
@@ -73,11 +74,14 @@ export class HotelsController {
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   @Get(':id')
   findOne(@Param('id') id: string) {
+    if (!id) {
+      throw new BadRequestException('Hotel id is required');
+    }
     return this.hotelsService.findOne(id);
   }
 
   @Public()
-  @ApiOperation({ summary: 'Get a Branch' })
+  @ApiOperation({ summary: 'Find a Branch' })
   @ApiResponse({
     status: 200,
     description: 'The found record',
@@ -103,6 +107,9 @@ export class HotelsController {
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateHotelDto: UpdateHotelDto) {
+    if (!id) {
+      throw new BadRequestException('Hotel id is required');
+    }
     return this.hotelsService.update(id, updateHotelDto);
   }
 

@@ -12,13 +12,6 @@ export class CreateLodgeBranchDto {
 
   @IsString()
   @ApiProperty({
-    description: 'Name of hotel branch',
-    example: 'Everest Lodge | Kathmandu',
-  })
-  image: string;
-
-  @IsString()
-  @ApiProperty({
     description: 'Lodge branch City',
     example: 'Kathmandu',
   })
@@ -87,4 +80,11 @@ export class CreateLodgeDto {
   @ValidateNested({ each: true })
   @Type(() => CreateLodgeBranchDto)
   branches: CreateLodgeBranchDto[];
+
+  @IsString()
+  @ApiProperty({
+    description: 'Image of lodge',
+    example: 'abcd.jpt',
+  })
+  image: string;
 }

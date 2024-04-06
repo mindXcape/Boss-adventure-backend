@@ -133,15 +133,23 @@ export class HotelsService {
         throw new BadRequestException('Branch does not exist');
       }
 
+      this._logger.log(`Updating hotel branch of id ${branchId}`);
       const updatedBranch = await this.prismaService.hotelBranch.update({
         where: { id: branchId },
         data: {
           name: branchName || branch.name,
           ...rest,
         },
+        include: {
+          hotel: true,
+        },
       });
+      const hotel = await this.getSignedUrl(updatedBranch.hotel);
 
-      return updatedBranch;
+      return {
+        ...updatedBranch,
+        hotel,
+      };
     } catch (error) {
       this._logger.error(`Error while updating branch: ${error}`);
       throw new BadRequestException(error.message);
@@ -185,7 +193,14 @@ export class HotelsService {
       const branches = await this.prismaService.hotelBranch.findMany({
         include: { hotel: true },
       });
-      return branches;
+      const result = branches.map(async branch => {
+        const hotel = await this.getSignedUrl(branch.hotel);
+        return {
+          ...branch,
+          hotel,
+        };
+      });
+      return Promise.all(result);
     } catch (error) {
       this._logger.error(`Error while fetching all branches: ${error}`);
       throw new BadRequestException(error.message);
@@ -202,7 +217,12 @@ export class HotelsService {
       if (!branch) {
         throw new BadRequestException('Branch does not exist');
       }
-      return branch;
+      const hotel = await this.getSignedUrl(branch.hotel);
+
+      return {
+        ...branch,
+        hotel,
+      };
     } catch (error) {
       this._logger.error(`Error while fetching branch: ${error}`);
       throw new BadRequestException(error.message);
@@ -250,6 +270,10 @@ export class HotelsService {
   async removeBranches(hotelId: string) {
     try {
       this._logger.log(`Deleting all branches of hotel with id: ${hotelId}`);
+      const doesHotelExist = await this.prismaService.hotel.findUnique({ where: { id: hotelId } });
+      if (!doesHotelExist) {
+        throw new BadRequestException('Hotel does not exist');
+      }
       await this.prismaService.hotelBranch.deleteMany({ where: { hotelId } });
       return await this.prismaService.hotel.findUnique({
         where: { id: hotelId },
