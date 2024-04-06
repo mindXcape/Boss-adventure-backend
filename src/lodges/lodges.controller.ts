@@ -13,7 +13,7 @@ import {
 import { LodgesService } from './lodges.service';
 import { CreateLodgeBranchDto, CreateLodgeDto } from './dto/create-lodge.dto';
 import { UpdateLodgeBranchDto, UpdateLodgeDto } from './dto/update-lodge.dto';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.auth.guard';
 import { RoleGuard } from 'src/auth/guards/role.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';

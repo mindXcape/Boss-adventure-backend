@@ -13,7 +13,14 @@ import {
 import { HotelsService } from './hotels.service';
 import { CreateHotelBranchDto, CreateHotelDto } from './dto/create-hotel.dto';
 import { UpdateHotelBranchDto, UpdateHotelDto } from './dto/update-hotel.dto';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiProperty,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.auth.guard';
 import { RoleGuard } from 'src/auth/guards/role.guard';
@@ -55,6 +62,9 @@ export class HotelsController {
 
   @Public()
   @ApiOperation({ summary: 'List all branches' })
+  // @ApiQuery({
+  //   type: QueryHotelDto,
+  // })
   @ApiResponse({
     status: 200,
     description: 'The found record',
