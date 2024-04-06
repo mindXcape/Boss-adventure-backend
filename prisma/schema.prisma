@@ -129,8 +129,9 @@ model ProfessionalProfile {
 }
 
 model Hotel {
-  id   String  @id @default(uuid())
-  name String?
+  id    String  @id @default(uuid())
+  name  String?
+  image String?
 
   branch    HotelBranch[]
   createdAt DateTime      @default(now())
@@ -142,7 +143,6 @@ model Hotel {
 model HotelBranch {
   id      String  @id @default(uuid())
   name    String?
-  image   String?
   state   String?
   city    String?
   address String?
@@ -164,8 +164,9 @@ model HotelBranch {
 }
 
 model Lodge {
-  id   String  @id @default(uuid())
-  name String?
+  id    String  @id @default(uuid())
+  name  String?
+  image String?
 
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
@@ -177,7 +178,6 @@ model Lodge {
 model LodgeBranch {
   id             String  @id @default(uuid())
   name           String?
-  image          String?
   state          String?
   city           String?
   address        String?

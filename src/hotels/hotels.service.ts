@@ -3,7 +3,6 @@ import { CreateHotelBranchDto, CreateHotelDto } from './dto/create-hotel.dto';
 import { UpdateHotelBranchDto, UpdateHotelDto } from './dto/update-hotel.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AwsService } from 'src/aws/aws.service';
-import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class HotelsService {
@@ -17,17 +16,19 @@ export class HotelsService {
     if (Array.isArray(items)) {
       return await Promise.all(
         items.map(async item => {
+          if (item.image === null) return item;
           const url = await this.awsService.getSignedUrlFromS3(item.image);
           return { ...item, image: url };
         }),
       );
     }
+    if (items.image === null) return items;
     const url = await this.awsService.getSignedUrlFromS3(items.image);
     return { ...items, image: url };
   }
 
   async create(createHotelDto: CreateHotelDto) {
-    const { branches, hotelName } = createHotelDto;
+    const { branches, image, hotelName } = createHotelDto;
     try {
       this._logger.log(`Creating new hotel: ${hotelName}`);
       let hotelId = '';
@@ -35,6 +36,7 @@ export class HotelsService {
         const hotel = await tx.hotel.create({
           data: {
             name: hotelName,
+            image,
           },
         });
 
@@ -50,17 +52,14 @@ export class HotelsService {
         }
         hotelId = hotel.id;
       });
-      return await this.prismaService.hotel.findUnique({
+      const hotel = await this.prismaService.hotel.findUnique({
         where: { id: hotelId },
         include: { branch: true },
       });
+      return await this.getSignedUrl(hotel);
     } catch (error) {
       this._logger.error(`Error while creating hotel: ${error}`);
-      for (const branch of branches) {
-        if (branch.image) {
-          await this.awsService.deleteFileFromS3(branch.image);
-        }
-      }
+      await this.awsService.deleteFileFromS3(image);
       throw new BadRequestException(error.message);
     }
   }
@@ -73,12 +72,8 @@ export class HotelsService {
           branch: true,
         },
       });
-      const result = hotels.map(async hotel => {
-        return {
-          ...hotel,
-          branch: await this.getSignedUrl(hotel.branch),
-        };
-      });
+      const result = await this.getSignedUrl(hotels);
+
       return await Promise.all(result);
     } catch (error) {
       this._logger.error(`Error while fetching all hotels: ${error}`);
@@ -98,12 +93,9 @@ export class HotelsService {
       if (!hotel) {
         throw new BadRequestException('Hotel does not exist');
       }
-      const branches = await this.getSignedUrl(hotel.branch);
+      const result = await this.getSignedUrl(hotel);
 
-      return {
-        ...hotel,
-        branch: branches,
-      };
+      return result;
     } catch (error) {
       this._logger.error(`Error while fetching hotel: ${error}`);
       throw new BadRequestException(error.message);
@@ -120,15 +112,13 @@ export class HotelsService {
         where: { id },
         data: {
           name: updateHotelDto.hotelName || hotel.name,
+          image: updateHotelDto.image || hotel.image,
         },
         include: { branch: true },
       });
-      const branches = await this.getSignedUrl(updatedHotel.branch);
+      const results = await this.getSignedUrl(updatedHotel);
 
-      return {
-        ...updatedHotel,
-        branch: branches,
-      };
+      return results;
     } catch (error) {
       this._logger.error(`Error while updating hotel: ${error}`);
       throw new BadRequestException(error.message);
@@ -150,11 +140,8 @@ export class HotelsService {
           ...rest,
         },
       });
-      const branches = await this.getSignedUrl(updatedBranch);
 
-      return {
-        ...branches,
-      };
+      return updatedBranch;
     } catch (error) {
       this._logger.error(`Error while updating branch: ${error}`);
       throw new BadRequestException(error.message);
@@ -184,10 +171,8 @@ export class HotelsService {
         where: { id: hotelId },
         include: { branch: true },
       });
-      return {
-        ...newHotel,
-        branch: await this.getSignedUrl(newHotel.branch),
-      };
+      const result = await this.getSignedUrl(newHotel);
+      return result;
     } catch (error) {
       this._logger.error(`Error while adding new branches: ${error}`);
       throw new BadRequestException(error.message);
@@ -198,10 +183,9 @@ export class HotelsService {
     try {
       this._logger.log(`Fetching all branches`);
       const branches = await this.prismaService.hotelBranch.findMany({
-        include: { hotel: { select: { name: true } } },
+        include: { hotel: true },
       });
-      const signedBranches = await this.getSignedUrl(branches);
-      return signedBranches;
+      return branches;
     } catch (error) {
       this._logger.error(`Error while fetching all branches: ${error}`);
       throw new BadRequestException(error.message);
@@ -213,13 +197,12 @@ export class HotelsService {
       this._logger.log(`Fetching branch with id: ${branchId}`);
       const branch = await this.prismaService.hotelBranch.findUnique({
         where: { id: branchId },
-        include: { hotel: { select: { name: true } } },
+        include: { hotel: true },
       });
       if (!branch) {
         throw new BadRequestException('Branch does not exist');
       }
-      const signedBranch = await this.getSignedUrl(branch);
-      return signedBranch;
+      return branch;
     } catch (error) {
       this._logger.error(`Error while fetching branch: ${error}`);
       throw new BadRequestException(error.message);
@@ -254,7 +237,6 @@ export class HotelsService {
       if (!branch) {
         throw new BadRequestException('Hotel branch does not exist');
       }
-      await this.awsService.deleteFileFromS3(branch.image);
       const deletedBranch = await this.prismaService.hotelBranch.delete({
         where: { id: branchId },
       });
@@ -268,13 +250,7 @@ export class HotelsService {
   async removeBranches(hotelId: string) {
     try {
       this._logger.log(`Deleting all branches of hotel with id: ${hotelId}`);
-      await this.prismaService.$transaction(async tx => {
-        const branches = await tx.hotelBranch.findMany({ where: { hotelId } });
-        for (const branch of branches) {
-          await this.awsService.deleteFileFromS3(branch.image);
-        }
-        await tx.hotelBranch.deleteMany({ where: { hotelId } });
-      });
+      await this.prismaService.hotelBranch.deleteMany({ where: { hotelId } });
       return await this.prismaService.hotel.findUnique({
         where: { id: hotelId },
         include: { branch: true },
@@ -288,8 +264,17 @@ export class HotelsService {
   async remove(id: string) {
     try {
       this._logger.log(`Deleting hotel with id: ${id}`);
-      const hotels = await this.prismaService.hotel.delete({ where: { id } });
-      return hotels;
+      const doesHotelExist = await this.prismaService.hotel.findUnique({ where: { id } });
+      if (!doesHotelExist) {
+        throw new BadRequestException('Hotel does not exist');
+      }
+      const hotel = await this.prismaService.hotel.delete({ where: { id } });
+
+      if (hotel.image) {
+        await this.awsService.deleteFileFromS3(hotel.image);
+      }
+
+      return hotel;
     } catch (error) {
       this._logger.error(`Error while deleting hotel: ${error}`);
       throw new BadRequestException(error.message);
