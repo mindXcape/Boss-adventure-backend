@@ -168,9 +168,9 @@ model Lodge {
   name  String?
   image String?
 
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  LodgeBranch LodgeBranch[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  branch    LodgeBranch[]
 
   @@map("lodges")
 }
