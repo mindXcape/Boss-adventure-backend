@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   BadRequestException,
+  Query,
 } from '@nestjs/common';
 import { LodgesService } from './lodges.service';
 import { CreateLodgeBranchDto, CreateLodgeDto } from './dto/create-lodge.dto';
@@ -18,6 +19,7 @@ import { RoleGuard } from 'src/auth/guards/role.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Public } from 'src/common/decorators/public.decorator';
 import { CreateHotelDto } from 'src/hotels/dto/create-hotel.dto';
+import { QueryLodgeDto } from './dto/query-lodge.dto';
 
 @Controller('lodges')
 @ApiBearerAuth('access-token')
@@ -75,8 +77,8 @@ export class LodgesController {
   })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   @Get('branches')
-  findAllBranches() {
-    return this.lodgesService.getAllBranches();
+  findAllBranches(@Query() query: QueryLodgeDto) {
+    return this.lodgesService.getAllBranches(query);
   }
 
   @Public()

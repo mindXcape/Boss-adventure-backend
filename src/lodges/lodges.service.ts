@@ -3,6 +3,7 @@ import { CreateLodgeBranchDto, CreateLodgeDto } from './dto/create-lodge.dto';
 import { UpdateLodgeBranchDto, UpdateLodgeDto } from './dto/update-lodge.dto';
 import { AwsService } from 'src/aws/aws.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { QueryLodgeDto } from './dto/query-lodge.dto';
 
 @Injectable()
 export class LodgesService {
@@ -159,10 +160,17 @@ export class LodgesService {
     }
   }
 
-  async getAllBranches() {
+  async getAllBranches(query: QueryLodgeDto) {
     try {
       this._logger.log(`Fetching all lodges branches`);
       const branches = await this.prismaService.lodgeBranch.findMany({
+        where: {
+          OR: [
+            { name: { contains: query.search, mode: 'insensitive' } },
+            { address: { contains: query.search, mode: 'insensitive' } },
+            { lodge: { name: { contains: query.search, mode: 'insensitive' } } },
+          ],
+        },
         include: { lodge: true },
       });
       const result = branches.map(async branch => {

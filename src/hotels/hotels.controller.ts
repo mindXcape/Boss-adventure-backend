@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   BadRequestException,
+  Query,
 } from '@nestjs/common';
 import { HotelsService } from './hotels.service';
 import { CreateHotelBranchDto, CreateHotelDto } from './dto/create-hotel.dto';
@@ -17,6 +18,7 @@ import { Roles } from 'src/common/decorators/roles.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.auth.guard';
 import { RoleGuard } from 'src/auth/guards/role.guard';
 import { Public } from 'src/common/decorators/public.decorator';
+import { QueryHotelDto } from './dto/query-hotel.dto';
 
 @Controller('hotels')
 @ApiBearerAuth('access-token')
@@ -60,8 +62,8 @@ export class HotelsController {
   })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   @Get('branches')
-  findAllBranches() {
-    return this.hotelsService.getAllBranches();
+  findAllBranches(@Query() query: QueryHotelDto) {
+    return this.hotelsService.getAllBranches(query);
   }
 
   @Public()

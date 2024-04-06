@@ -3,6 +3,7 @@ import { CreateHotelBranchDto, CreateHotelDto } from './dto/create-hotel.dto';
 import { UpdateHotelBranchDto, UpdateHotelDto } from './dto/update-hotel.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AwsService } from 'src/aws/aws.service';
+import { QueryHotelDto } from './dto/query-hotel.dto';
 
 @Injectable()
 export class HotelsService {
@@ -187,10 +188,17 @@ export class HotelsService {
     }
   }
 
-  async getAllBranches() {
+  async getAllBranches(query: QueryHotelDto) {
     try {
       this._logger.log(`Fetching all branches`);
       const branches = await this.prismaService.hotelBranch.findMany({
+        where: {
+          OR: [
+            { name: { contains: query.search || '', mode: 'insensitive' } },
+            { address: { contains: query.search || '', mode: 'insensitive' } },
+            { hotel: { name: { contains: query.search || '', mode: 'insensitive' } } },
+          ],
+        },
         include: { hotel: true },
       });
       const result = branches.map(async branch => {
