@@ -4,6 +4,7 @@ import { UpdateHotelBranchDto, UpdateHotelDto } from './dto/update-hotel.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AwsService } from 'src/aws/aws.service';
 import { QueryHotelDto } from './dto/query-hotel.dto';
+import { paginate } from 'src/utils/paginate';
 
 @Injectable()
 export class HotelsService {
@@ -191,24 +192,34 @@ export class HotelsService {
   async getAllBranches(query: QueryHotelDto) {
     try {
       this._logger.log(`Fetching all branches`);
-      const branches = await this.prismaService.hotelBranch.findMany({
-        where: {
-          OR: [
-            { name: { contains: query.search || '', mode: 'insensitive' } },
-            { address: { contains: query.search || '', mode: 'insensitive' } },
-            { hotel: { name: { contains: query.search || '', mode: 'insensitive' } } },
-          ],
+      const branches = await paginate(
+        this.prismaService.hotelBranch,
+        {
+          where: {
+            OR: [
+              { name: { contains: query.search || '', mode: 'insensitive' } },
+              { address: { contains: query.search || '', mode: 'insensitive' } },
+              { hotel: { name: { contains: query.search || '', mode: 'insensitive' } } },
+            ],
+          },
+          include: { hotel: true },
         },
-        include: { hotel: true },
-      });
-      const result = branches.map(async branch => {
+        {
+          perPage: +query.perPage || 10,
+          page: +query.page || 1,
+        },
+      );
+      const result = branches.rows.map(async (branch: any) => {
         const hotel = await this.getSignedUrl(branch.hotel);
         return {
           ...branch,
           hotel,
         };
       });
-      return Promise.all(result);
+      return {
+        ...branches,
+        rows: await Promise.all(result),
+      };
     } catch (error) {
       this._logger.error(`Error while fetching all branches: ${error}`);
       throw new BadRequestException(error.message);
