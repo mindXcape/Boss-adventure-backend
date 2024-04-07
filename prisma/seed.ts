@@ -10,11 +10,6 @@ enum ROLE {
 
 export const users = [
   {
-    name: 'Dipesh kumar sah',
-    roles: [ROLE.ADMIN],
-    email: 'dipesh@mailinator.com',
-  },
-  {
     name: 'Subhashish Jung Shah',
     roles: [ROLE.ADMIN],
     email: 'subhashish@mailinator.com',
@@ -132,9 +127,61 @@ const loadUsers = async () => {
   console.log('100 Users seed data loaded');
 };
 
+const admins = [
+  {
+    name: 'Dipesh Kumar Sah',
+    roles: [ROLE.ADMIN],
+    email: 'dipesh.mindxcape@gmail.com',
+  },
+  {
+    name: 'Anwesh Gurung',
+    roles: [ROLE.ADMIN],
+    email: 'anwesh.mindxcape@gmail.com',
+  },
+  {
+    name: 'Manjul Tamakar',
+    roles: [ROLE.ADMIN],
+    email: 'manjul.mindxcape@gmail.com',
+  },
+  {
+    name: 'Subhashish Jung Shah',
+    roles: [ROLE.ADMIN],
+    email: 'subhashish.mindxcape@gmail.com',
+  },
+  {
+    name: 'Ang Nuru Sherpa',
+    roles: [ROLE.ADMIN],
+    email: 'sherpanuru629@gmail.com',
+  },
+];
+
+const loadProductionAdmins = async () => {
+  for await (const user of admins) {
+    await prisma.admin.create({
+      data: {
+        name: user.name,
+        email: user.email,
+        roles: user.roles,
+        isActive: true,
+      },
+    });
+  }
+  console.log('Admin seed data loaded');
+};
+const loadProductionSeed = async () => {
+  try {
+    console.log('Loading production seed data');
+    await loadBanks();
+    await loadProductionAdmins();
+    console.log('Production seed data loaded successfully');
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 async function main() {
   if (process.env.NODE_ENV === 'production') {
-    await loadBanks();
+    await loadProductionSeed();
   } else {
     await loadAdmin();
     await loadBanks();
