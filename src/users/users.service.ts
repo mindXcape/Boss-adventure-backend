@@ -204,6 +204,7 @@ export class UsersService {
       bankId,
       passportExpire,
       guide_license,
+      panNumber,
       nma,
       role,
     } = updateUserDto;
@@ -262,6 +263,7 @@ export class UsersService {
               citizenNumber: citizenNumber || user.professional.citizenNumber,
               guide_license: guide_license || user.professional.guide_license,
               nma: nma || user.professional.nma,
+              panNumber: panNumber || user.professional.panNumber,
             },
           },
         },
