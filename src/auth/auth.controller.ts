@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Request, Res, UseGuards } from '@nestjs/common';
 import { totp } from 'otplib';
 import { AuthService } from './auth.service';
 import { AuthDto } from './dto';
@@ -8,6 +8,9 @@ import { Public } from 'src/common/decorators/public.decorator';
 import { RefreshJWTGuard } from './guards/refresh.auth.guard';
 import { ResponseMessage, Tokens } from './types';
 import { CreateAdminDto } from 'src/admins/dto/create-admin.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { JwtAuthGuard } from './guards/jwt.auth.guard';
+import { RoleGuard } from './guards/role.guard';
 
 @Controller('auth')
 @ApiTags('Auth')
@@ -18,8 +21,22 @@ export class AuthController {
     };
   }
 
+  @ApiBearerAuth('access-token')
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @ApiOperation({ summary: 'Validate JWT token' })
+  @Get('verify-jwt')
+  async verifyJwt(): Promise<ResponseMessage | null> {
+    return this.authService.validateJwt();
+  }
+
   @Public()
   @UseGuards(LocalAuthGuard)
+  @ApiOperation({ summary: 'Login User' })
+  @ApiResponse({
+    status: 200,
+    description: 'The found record',
+    type: [CreateAdminDto],
+  })
   @Post('login')
   async login(@Request() req): Promise<CreateAdminDto & Tokens> {
     return await this.authService.login(req.user);

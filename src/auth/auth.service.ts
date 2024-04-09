@@ -25,6 +25,10 @@ export class AuthService {
     throw new NotFoundException('User not found');
   }
 
+  async validateJwt() {
+    return { success: true, msg: 'Valid JWT' };
+  }
+
   async register(createUserDto: CreateAdminDto) {
     const user = await this.adminService.create(createUserDto);
     if (user) {
