@@ -11,6 +11,8 @@ import { FilesModule } from './files/files.module';
 import { BanksModule } from './banks/banks.module';
 import { HotelsModule } from './hotels/hotels.module';
 import { LodgesModule } from './lodges/lodges.module';
+import { PackagesModule } from './packages/packages.module';
+import { FranchisesModule } from './franchises/franchises.module';
 
 @Module({
   imports: [
@@ -35,6 +37,8 @@ import { LodgesModule } from './lodges/lodges.module';
     BanksModule,
     HotelsModule,
     LodgesModule,
+    PackagesModule,
+    FranchisesModule,
   ],
 })
 export class AppModule {}

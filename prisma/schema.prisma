@@ -74,8 +74,13 @@ model User {
   professional  ProfessionalProfile?
   accountNumber String?
   designation   Designation?
-  createdAt     DateTime             @default(now())
-  updatedAt     DateTime             @updatedAt
+  groups        UsersOnGroup[]
+
+  ledPMS    PMS[] @relation("PMSLeader")
+  guidedPMS PMS[] @relation("PMSGuide")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("users")
 }
@@ -157,8 +162,9 @@ model HotelBranch {
   hotel   Hotel   @relation(fields: [hotelId], references: [id], onDelete: Cascade)
   hotelId String
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  booking   Booking[]
 
   @@map("hotel_branches")
 }
@@ -187,10 +193,98 @@ model LodgeBranch {
   pocDesignation String?
   email          String?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  lodge     Lodge    @relation(fields: [lodgeId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  lodge     Lodge     @relation(fields: [lodgeId], references: [id], onDelete: Cascade)
   lodgeId   String
+  booking   Booking[]
 
   @@map("lodge_branches")
+}
+
+model Franchise {
+  id    String  @id @default(uuid())
+  name  String?
+  image String?
+
+  branch    FranchisePackages[]
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+
+  @@map("franchises")
+}
+
+model FranchisePackages {
+  id          String @id @default(uuid())
+  name        String @unique
+  duration    Int
+  description Json
+
+  franchise   Franchise @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+  franchiseId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  PMS       PMS[]
+
+  @@map("franchise_packages")
+}
+
+model Group {
+  id           String         @id
+  PMS          PMS[]
+  UsersOnGroup UsersOnGroup[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("groups")
+}
+
+model UsersOnGroup {
+  groupId String
+  userId  String
+  group   Group  @relation(fields: [groupId], references: [id])
+  user    User   @relation(fields: [userId], references: [id])
+
+  @@id([groupId, userId])
+  @@map("users_on_group")
+}
+
+model PMS {
+  id        String  @id @default(uuid())
+  groupCode String?
+  group     Group?  @relation(fields: [groupCode], references: [id], onDelete: SetNull)
+
+  leaderId String?
+  leader   User?   @relation("PMSLeader", fields: [leaderId], references: [id], onDelete: SetNull)
+
+  guideId String?
+  guide   User?   @relation("PMSGuide", fields: [guideId], references: [id], onDelete: SetNull)
+
+  packageId String?
+  package   FranchisePackages? @relation(fields: [packageId], references: [id], onDelete: SetNull)
+
+  customPackage Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("pms")
+}
+
+model Booking {
+  id      String       @id @default(uuid())
+  date    DateTime
+  meal    String
+  hotelId String?
+  hotel   HotelBranch? @relation(fields: [hotelId], references: [id], onDelete: SetNull)
+
+  lodgeId String?
+  lodge   LodgeBranch? @relation(fields: [lodgeId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("bookings")
 }

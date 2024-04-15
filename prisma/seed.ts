@@ -10,6 +10,11 @@ enum ROLE {
 
 export const users = [
   {
+    name: 'Dipesh Kumar Sah',
+    roles: [ROLE.ADMIN],
+    email: 'dipesh@mailinator.com',
+  },
+  {
     name: 'Subhashish Jung Shah',
     roles: [ROLE.ADMIN],
     email: 'subhashish@mailinator.com',
