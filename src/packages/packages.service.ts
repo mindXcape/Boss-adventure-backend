@@ -95,7 +95,10 @@ export class PackagesService {
         return { ...item, franchise };
       });
 
-      return Promise.all(result);
+      return {
+        ...allPackages,
+        rows: await Promise.all(result),
+      };
     } catch (error) {
       this._logger.error(`Error in Updating package: ${error.message}`);
       throw new Error(error.message);
