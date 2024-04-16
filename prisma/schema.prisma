@@ -231,7 +231,8 @@ model FranchisePackages {
 }
 
 model Group {
-  id           String         @id
+  id           String         @id @default(uuid())
+  groupId      String         @unique
   PMS          PMS[]
   UsersOnGroup UsersOnGroup[]
 
@@ -244,8 +245,8 @@ model Group {
 model UsersOnGroup {
   groupId String
   userId  String
-  group   Group  @relation(fields: [groupId], references: [id])
-  user    User   @relation(fields: [userId], references: [id])
+  group   Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([groupId, userId])
   @@map("users_on_group")

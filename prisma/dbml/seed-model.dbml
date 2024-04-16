@@ -163,6 +163,7 @@ Table franchise_packages {
 
 Table groups {
   id String [pk]
+  groupId String [unique, not null]
   PMS pms [not null]
   UsersOnGroup users_on_group [not null]
   createdAt DateTime [default: `now()`, not null]
@@ -243,9 +244,9 @@ Ref: lodge_branches.lodgeId > lodges.id [delete: Cascade]
 
 Ref: franchise_packages.franchiseId > franchises.id [delete: Cascade]
 
-Ref: users_on_group.groupId > groups.id
+Ref: users_on_group.groupId > groups.id [delete: Cascade]
 
-Ref: users_on_group.userId > users.id
+Ref: users_on_group.userId > users.id [delete: Cascade]
 
 Ref: pms.groupCode > groups.id [delete: Set Null]
 
