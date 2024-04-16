@@ -4,11 +4,30 @@ import { UpdateGroupDto } from './dto/update-group.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { paginate } from 'src/utils/paginate';
 import { QueryPackagesDto } from 'src/packages/dto/query-package.dto';
+import { AwsService } from 'src/aws/aws.service';
 
 @Injectable()
 export class GroupsService {
   private readonly _logger = new Logger('Group Services');
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly awsService: AwsService,
+  ) {}
+
+  private async getSignedUrl(items: any[] | any) {
+    if (Array.isArray(items)) {
+      return await Promise.all(
+        items.map(async (item: any) => {
+          if (item.user.profileImage === null) return item;
+          const url = await this.awsService.getSignedUrlFromS3(item.user.profileImage);
+          return { ...item, user: { ...item.user, profileImage: url } };
+        }),
+      );
+    }
+    if (items.profileImage === null) return items;
+    const url = await this.awsService.getSignedUrlFromS3(items.profileImage);
+    return { ...items, profileImage: url };
+  }
 
   async create(createGroupDto: CreateGroupDto) {
     try {
@@ -70,7 +89,13 @@ export class GroupsService {
 
           include: {
             UsersOnGroup: {
-              select: { user: true },
+              select: {
+                user: {
+                  include: {
+                    roles: true,
+                  },
+                },
+              },
             },
           },
         },
@@ -79,10 +104,20 @@ export class GroupsService {
           perPage: query.perPage || 10,
         },
       );
-      return allGroups;
+      const newRows = allGroups.rows.map(async (group: any) => {
+        const user = await this.getSignedUrl(group.UsersOnGroup);
+        return {
+          ...group,
+          UsersOnGroup: user,
+        };
+      });
+      return {
+        ...allGroups,
+        rows: await Promise.all(newRows),
+      };
     } catch (error) {
       this._logger.error(error.message);
-      throw new BadRequestException('Error getting all groups');
+      throw new BadRequestException(error.message);
     }
   }
   async validateOne(id: string) {
@@ -109,11 +144,25 @@ export class GroupsService {
         },
         include: {
           UsersOnGroup: {
-            select: { user: true },
+            select: {
+              user: {
+                include: {
+                  roles: true,
+                  address: true,
+                  professional: true,
+                },
+              },
+            },
           },
         },
       });
-      return group;
+
+      const users = group.UsersOnGroup.map(async (user: any) => {
+        const u = await this.getSignedUrl(user.user);
+        return u;
+      });
+
+      return { ...group, UsersOnGroup: await Promise.all(users) };
     } catch (error) {
       this._logger.error(error.message);
       throw new BadRequestException(error.message);
