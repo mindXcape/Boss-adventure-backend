@@ -37,6 +37,18 @@ export class UsersController {
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
+  @Roles('ADMIN')
+  @ApiOperation({ summary: 'List all user' })
+  @ApiResponse({
+    status: 200,
+    description: 'The found record',
+    type: [CreateUserDto],
+  })
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
+  @Get('/allUsers')
+  getAll() {
+    return this.usersService.getAll();
+  }
 
   @Roles('ADMIN')
   @Get()

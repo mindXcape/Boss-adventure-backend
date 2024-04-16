@@ -97,6 +97,43 @@ export class UsersService {
     }
   }
 
+  async getAll() {
+    try {
+      this._logger.log(`Fetching all users`);
+      const users = await this.prisma.user.findMany({
+        include: {
+          address: true,
+          professional: true,
+          roles: true,
+          bank: {
+            select: {
+              id: true,
+              name: true,
+              class: true,
+            },
+          },
+        },
+        orderBy: {
+          name: 'asc',
+        },
+      });
+
+      const signedUsers = users.map(async (user: any) => {
+        return {
+          ...user,
+          profileImage: user?.profileImage
+            ? await this.awsService.getSignedUrlFromS3(user.profileImage)
+            : null,
+        };
+      });
+
+      return await Promise.all(signedUsers);
+    } catch (error) {
+      this._logger.error(error.message, error.stack);
+      throw new BadRequestException(error.message);
+    }
+  }
+
   async findAll(query: PaginateQueryDto) {
     try {
       this._logger.log(`Fetching all users`);

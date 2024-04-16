@@ -14,6 +14,7 @@ import { LodgesModule } from './lodges/lodges.module';
 import { PackagesModule } from './packages/packages.module';
 import { FranchisesModule } from './franchises/franchises.module';
 import { GroupsModule } from './groups/groups.module';
+import { PmsModule } from './pms/pms.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { GroupsModule } from './groups/groups.module';
     PackagesModule,
     FranchisesModule,
     GroupsModule,
+    PmsModule,
   ],
 })
 export class AppModule {}
