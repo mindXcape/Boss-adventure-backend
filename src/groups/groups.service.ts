@@ -85,6 +85,20 @@ export class GroupsService {
       throw new BadRequestException('Error getting all groups');
     }
   }
+  async validateOne(id: string) {
+    try {
+      this._logger.log(`Validating group with id ${id}`);
+      const group = await this.prismaService.group.findUnique({
+        where: {
+          groupId: id,
+        },
+      });
+      return !group ? { unique: true } : { unique: false };
+    } catch (error) {
+      this._logger.error(error.message);
+      throw new BadRequestException(error.message);
+    }
+  }
 
   async findOne(id: string) {
     try {

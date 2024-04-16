@@ -54,6 +54,19 @@ export class GroupsController {
   }
 
   @Public()
+  @ApiOperation({ summary: 'Check groupId' })
+  @ApiResponse({
+    status: 200,
+    description: 'The found record',
+    type: CreateGroupDto,
+  })
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
+  @Get('validate/:id')
+  validateOne(@Param('id') id: string) {
+    return this.groupsService.validateOne(id);
+  }
+
+  @Public()
   @ApiOperation({ summary: 'Find a Group' })
   @ApiResponse({
     status: 200,
