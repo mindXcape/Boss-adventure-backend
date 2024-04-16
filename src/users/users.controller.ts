@@ -46,8 +46,8 @@ export class UsersController {
   })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   @Get('/allUsers')
-  getAll() {
-    return this.usersService.getAll();
+  getAll(@Query() query: PaginateQueryDto) {
+    return this.usersService.getAll(query);
   }
 
   @Roles('ADMIN')

@@ -97,10 +97,16 @@ export class UsersService {
     }
   }
 
-  async getAll() {
+  async getAll(query: PaginateQueryDto) {
     try {
       this._logger.log(`Fetching all users`);
       const users = await this.prisma.user.findMany({
+        where: {
+          name: {
+            contains: query.name || '',
+            mode: 'insensitive',
+          },
+        },
         include: {
           address: true,
           professional: true,
