@@ -168,6 +168,7 @@ Table groups {
   UsersOnGroup users_on_group [not null]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
+  booking bookings [not null]
 }
 
 Table users_on_group {
@@ -183,7 +184,7 @@ Table users_on_group {
 
 Table pms {
   id String [pk]
-  groupCode String
+  groupId String
   group groups
   leaderId String
   leader users
@@ -204,6 +205,8 @@ Table bookings {
   hotel hotel_branches
   lodgeId String
   lodge lodge_branches
+  groupId String
+  group groups
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
 }
@@ -248,7 +251,7 @@ Ref: users_on_group.groupId > groups.id [delete: Cascade]
 
 Ref: users_on_group.userId > users.id [delete: Cascade]
 
-Ref: pms.groupCode > groups.id [delete: Set Null]
+Ref: pms.groupId > groups.groupId [delete: Set Null]
 
 Ref: pms.leaderId > users.id [delete: Set Null]
 
@@ -259,3 +262,5 @@ Ref: pms.packageId > franchise_packages.id [delete: Set Null]
 Ref: bookings.hotelId > hotel_branches.id [delete: Set Null]
 
 Ref: bookings.lodgeId > lodge_branches.id [delete: Set Null]
+
+Ref: bookings.groupId > groups.groupId [delete: Set Null]

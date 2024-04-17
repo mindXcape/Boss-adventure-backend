@@ -40,6 +40,16 @@ export class UsersService {
     try {
       this._logger.log(`Registering new user: ${createUserDto?.email}`);
 
+      const isUnique = await this.prisma.user.findFirst({
+        where: {
+          email,
+        },
+      });
+
+      if (isUnique) {
+        throw new BadRequestException('Email should be unique');
+      }
+
       const user = await this.prisma.user.create({
         data: {
           name,
@@ -93,6 +103,7 @@ export class UsersService {
       };
     } catch (error) {
       await this.awsService.deleteFileFromS3(profileImage);
+      this._logger.log(error.message);
       throw new BadRequestException(error.message);
     }
   }
@@ -237,6 +248,7 @@ export class UsersService {
       address,
       citizenNumber,
       profileImage,
+      designation,
       city,
       state,
       country,
@@ -264,6 +276,12 @@ export class UsersService {
 
       if (!user) throw new BadRequestException('User not found');
 
+      const isValidEmail = await this.prisma.user.findFirst({
+        where: { email },
+      });
+
+      if (isValidEmail) throw new BadRequestException('Email should be unique');
+
       const updatedUser = await this.prisma.user.update({
         where: { id },
         include: {
@@ -274,6 +292,7 @@ export class UsersService {
         },
         data: {
           name: name || user.name,
+          designation: designation || user.designation,
           email: email || user.email,
           phone: phone || user.phone,
           status: status || user.status,

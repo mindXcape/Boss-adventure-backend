@@ -58,6 +58,7 @@ export class HotelsService {
         where: { id: hotelId },
         include: { branch: true },
       });
+
       return await this.getSignedUrl(hotel);
     } catch (error) {
       this._logger.error(`Error while creating hotel: ${error}`);

@@ -42,7 +42,19 @@ export class GroupsService {
       if (doesGroupExist) {
         throw new BadRequestException('Group Id should be unique');
       }
+      // Validate user IDs
+      const allUsersExist =
+        (await this.prismaService.user.count({
+          where: {
+            id: {
+              in: clients,
+            },
+          },
+        })) === clients.length;
 
+      if (!allUsersExist) {
+        throw new BadRequestException('One or more user IDs do not exist');
+      }
       const users = clients.map(clientId => {
         return {
           user: {

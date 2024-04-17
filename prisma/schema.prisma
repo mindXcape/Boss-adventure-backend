@@ -236,8 +236,9 @@ model Group {
   PMS          PMS[]
   UsersOnGroup UsersOnGroup[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  booking   Booking[]
 
   @@map("groups")
 }
@@ -253,9 +254,9 @@ model UsersOnGroup {
 }
 
 model PMS {
-  id        String  @id @default(uuid())
-  groupCode String?
-  group     Group?  @relation(fields: [groupCode], references: [id], onDelete: SetNull)
+  id      String  @id @default(uuid())
+  groupId String?
+  group   Group?  @relation(fields: [groupId], references: [groupId], onDelete: SetNull, onUpdate: Cascade)
 
   leaderId String?
   leader   User?   @relation("PMSLeader", fields: [leaderId], references: [id], onDelete: SetNull)
@@ -279,10 +280,13 @@ model Booking {
   date    DateTime
   meal    String
   hotelId String?
-  hotel   HotelBranch? @relation(fields: [hotelId], references: [id], onDelete: SetNull)
+  hotel   HotelBranch? @relation(fields: [hotelId], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   lodgeId String?
-  lodge   LodgeBranch? @relation(fields: [lodgeId], references: [id], onDelete: SetNull)
+  lodge   LodgeBranch? @relation(fields: [lodgeId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  groupId String?
+  group   Group?  @relation(fields: [groupId], references: [groupId], onDelete: SetNull, onUpdate: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
