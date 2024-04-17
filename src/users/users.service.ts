@@ -276,11 +276,13 @@ export class UsersService {
 
       if (!user) throw new BadRequestException('User not found');
 
-      const isValidEmail = await this.prisma.user.findFirst({
-        where: { email },
-      });
+      if (email) {
+        const isValidEmail = await this.prisma.user.findFirst({
+          where: { email },
+        });
 
-      if (isValidEmail) throw new BadRequestException('Email should be unique');
+        if (isValidEmail) throw new BadRequestException('Email should be unique');
+      }
 
       const updatedUser = await this.prisma.user.update({
         where: { id },
