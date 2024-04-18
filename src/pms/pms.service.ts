@@ -13,11 +13,29 @@ export class PmsService {
   private readonly _logger = new Logger('PMS Service');
   constructor(private prisma: PrismaService, private awsService: AwsService) {}
 
+  private async getSignedUrl(items: any[] | any) {
+    if (Array.isArray(items)) {
+      return await Promise.all(
+        items.map(async item => {
+          if (item.image === null) return item;
+          const url = await this.awsService.getSignedUrlFromS3(item.image);
+          return { ...item, image: url };
+        }),
+      );
+    }
+    if (items.image === null) return items;
+    const url = await this.awsService.getSignedUrlFromS3(items.image);
+    return { ...items, image: url };
+  }
+
   async createBooking(data: CreateBooking) {
     try {
       this._logger.log('Creating a new booking');
       if (!data.hotelId && !data.lodgeId) {
         throw new Error('HotelId or LodgeId is required');
+      }
+      if (data.hotelId && data.lodgeId) {
+        throw new BadRequestException('Only one of HotelId or LodgeId should be provided');
       }
       if (data.hotelId && data.lodgeId) {
         throw new Error('Only one of HotelId or LodgeId should be provided');
@@ -48,7 +66,85 @@ export class PmsService {
       });
       return booking;
     } catch (error) {
-      this._logger.log(error.message);
+      this._logger.error(error.message);
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  async updateBooking(id: string, data: CreateBooking) {
+    try {
+      this._logger.log(`Updating booking with id ${id}`);
+      if (!data.hotelId && !data.lodgeId) {
+        throw new Error('HotelId or LodgeId is required');
+      }
+      if (data.hotelId && data.lodgeId) {
+        throw new Error('Only one of HotelId or LodgeId should be provided');
+      }
+      if (data.hotelId) {
+        const hotelExists = await this.prisma.hotelBranch.findUnique({
+          where: { id: data.hotelId },
+          select: { id: true, name: true },
+        });
+        if (!hotelExists) {
+          throw new Error(`Hotel with ID ${data.hotelId} does not exist.`);
+        }
+      }
+      if (data.lodgeId) {
+        const lodgeExists = await this.prisma.lodgeBranch.findUnique({
+          where: { id: data.lodgeId },
+          select: { id: true, name: true },
+        });
+        if (!lodgeExists) {
+          throw new Error(`Lodge with ID ${data.lodgeId} does not exist.`);
+        }
+      }
+      const booking = await this.prisma.booking.update({
+        where: {
+          id,
+        },
+        data,
+      });
+      console.log('updated Booking: ', booking);
+      return booking;
+    } catch (error) {
+      this._logger.error(error.message);
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  async findBookingByGroup(payload: { groupId: string; lodgeId?: string; hotelId?: string }) {
+    try {
+      const { lodgeId, hotelId } = payload;
+      this._logger.log('Fetching booking');
+      // check if hotel or lodge is valid
+      if (lodgeId) {
+        const lodgeExists = await this.prisma.lodgeBranch.findUnique({
+          where: { id: lodgeId },
+          select: { id: true, name: true },
+        });
+        if (!lodgeExists) {
+          throw new Error(`Lodge with ID ${lodgeId} does not exist.`);
+        }
+      }
+      if (hotelId) {
+        const hotelExists = await this.prisma.hotelBranch.findUnique({
+          where: { id: hotelId },
+          select: { id: true, name: true },
+        });
+        if (!hotelExists) {
+          throw new Error(`Hotel with ID ${hotelId} does not exist.`);
+        }
+      }
+      const booking = await this.prisma.booking.findFirst({
+        where: {
+          groupId: payload.groupId,
+          ...(lodgeId && { lodgeId: payload.lodgeId }),
+          ...(hotelId && { hotelId: payload.hotelId }),
+        },
+      });
+      return booking;
+    } catch (error) {
+      this._logger.error(error.message);
       throw new BadRequestException(error.message);
     }
   }
@@ -56,13 +152,169 @@ export class PmsService {
   async findBooking(id: string) {
     try {
       this._logger.log(`Fetching booking with id ${id}`);
-      return await this.prisma.booking.findUnique({
+      const booking = await this.prisma.booking.findUnique({
         where: {
           id,
         },
+        include: {
+          lodge: {
+            include: {
+              lodge: { select: { name: true, image: true } },
+            },
+          },
+          hotel: {
+            include: {
+              hotel: { select: { name: true, image: true } },
+            },
+          },
+        },
       });
+
+      // If hotel is null, then it is a lodge
+      // so we get the signed url of the lodge
+      if (booking.hotel === null && booking.lodge !== null) {
+        const signedLodge = await this.getSignedUrl(booking.lodge.lodge);
+        return { ...booking, hotel: { ...booking.hotel, lodge: signedLodge } };
+      }
+
+      const signedHotel = await this.getSignedUrl(booking.hotel.hotel);
+      return { ...booking, hotel: { ...booking.hotel, hotel: signedHotel } };
     } catch (error) {
-      this._logger.log(error.message);
+      this._logger.error(error.message);
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  async validateDto(data: UpdatePmDto) {
+    const { groupId } = data;
+
+    if (!groupId) throw new BadRequestException('groupId is required');
+
+    const group = await this.prisma.group.findFirst({
+      where: {
+        groupId,
+      },
+      include: {
+        UsersOnGroup: {
+          include: {
+            user: {
+              include: {
+                roles: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!group) throw new BadRequestException('Invalid groupId provided');
+
+    // Check leader and guide exist in group or not and have correct roles
+    if (data.leaderId) {
+      const leaderExist = group.UsersOnGroup.find(
+        user =>
+          user.userId === data.leaderId && user.user.roles.some(role => role.roleId === 'LEADER'),
+      );
+      if (!leaderExist)
+        throw new BadRequestException(
+          'Leader not found in group or does not have correct role (Leader)',
+        );
+    }
+    if (data.guideId) {
+      const guideExist = group.UsersOnGroup.find(
+        user =>
+          user.userId === data.guideId && user.user.roles.some(role => role.roleId === 'GUIDE'),
+      );
+      if (!guideExist)
+        throw new BadRequestException(
+          'Guide not found in group or does not have correct role (Guide)',
+        );
+    }
+    if (!data.packageId) {
+      const packageExit = await this.prisma.franchisePackages.findFirst({
+        where: {
+          id: data.packageId,
+        },
+      });
+
+      if (!packageExit) throw new BadRequestException('Invalid packageId provided');
+    }
+    return true;
+  }
+
+  async update(id: string, updatePmDto: UpdatePmDto) {
+    try {
+      this._logger.log(`Updating PMS with id ${id}`);
+
+      await this.validateDto(updatePmDto);
+
+      const { activities, groupId } = updatePmDto;
+      const newActivities = {
+        activity: [],
+      };
+
+      const result = await this.prisma.$transaction(async prisma => {
+        for (const data of activities) {
+          const { date, description, hotelId, lodgeId, meal, name } = data;
+          const booking = await this.findBookingByGroup({ hotelId, lodgeId, groupId });
+          if (!booking) throw new BadRequestException('Booking does not exist');
+
+          const newBooking = await this.updateBooking(booking.id, {
+            date,
+            hotelId,
+            lodgeId,
+            meal,
+            groupId,
+          });
+
+          newActivities.activity.push({
+            bookingId: newBooking.id,
+            description,
+            name,
+          });
+        }
+        return await prisma.pMS.update({
+          where: { id },
+          data: {
+            groupId,
+            leaderId: updatePmDto.leaderId,
+            guideId: updatePmDto.guideId,
+            packageId: updatePmDto.packageId,
+            customPackage: newActivities,
+          },
+          include: {
+            group: {
+              select: {
+                groupId: true,
+              },
+            },
+            leader: {
+              select: {
+                roles: true,
+                name: true,
+                id: true,
+              },
+            },
+            guide: {
+              select: {
+                roles: true,
+                name: true,
+                id: true,
+              },
+            },
+            package: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        });
+      });
+
+      return result;
+    } catch (error) {
+      this._logger.error(error.message);
       throw new BadRequestException(error.message);
     }
   }
@@ -70,51 +322,14 @@ export class PmsService {
   async create(createPmDto: CreatePmDto) {
     try {
       const { groupId, activities } = createPmDto;
-      const group = await this.prisma.group.findFirst({
-        where: {
-          groupId,
-        },
-        include: {
-          UsersOnGroup: {
-            include: {
-              user: {
-                include: {
-                  roles: true,
-                },
-              },
-            },
-          },
-        },
-      });
-      if (!group) throw new BadRequestException('Invalid groupId provided');
+      this._logger.log(`Creating a new PMS for group ${groupId}`);
 
-      // Check leader and guide exist in group or not and have correct roles
-      const leaderExist = group.UsersOnGroup.find(
-        user =>
-          user.userId === createPmDto.leaderId &&
-          user.user.roles.some(role => role.roleId === 'LEADER'),
-      );
-      if (!leaderExist)
-        throw new BadRequestException('Leader not found in group or does not have correct role');
-      const guideExist = group.UsersOnGroup.find(
-        user =>
-          user.userId === createPmDto.guideId &&
-          user.user.roles.some(role => role.roleId === 'GUIDE'),
-      );
-      if (!guideExist)
-        throw new BadRequestException('Guide not found in group or does not have correct role');
-
-      const packageExit = await this.prisma.franchisePackages.findFirst({
-        where: {
-          id: createPmDto.packageId,
-        },
-      });
-
-      if (!packageExit) throw new BadRequestException('Invalid packageId provided');
+      await this.validateDto(createPmDto);
 
       const newActivities = {
         activity: [],
       };
+
       const result = await this.prisma.$transaction(async prisma => {
         for (const data of activities) {
           const { date, description, hotelId, lodgeId, meal, name } = data;
@@ -166,7 +381,7 @@ export class PmsService {
 
       return result;
     } catch (error) {
-      this._logger.log(error.message);
+      this._logger.error(error.message);
       throw new BadRequestException(error.message);
     }
   }
@@ -187,6 +402,16 @@ export class PmsService {
 
           include: {
             group: true,
+            lodge: {
+              include: {
+                lodge: { select: { name: true, image: true } },
+              },
+            },
+            hotel: {
+              include: {
+                hotel: { select: { name: true, image: true } },
+              },
+            },
           },
         },
         {
@@ -194,9 +419,20 @@ export class PmsService {
           perPage: query.perPage || 10,
         },
       );
-      return result;
+
+      const rows = result.rows.map(async (booking: any) => {
+        if (booking.hotel === null && booking.lodge !== null) {
+          const signedLodge = await this.getSignedUrl(booking.lodge.lodge);
+          return { ...booking, hotel: { ...booking.hotel, lodge: signedLodge } };
+        } else {
+          const signedHotel = await this.getSignedUrl(booking.hotel.hotel);
+          return { ...booking, hotel: { ...booking.hotel, hotel: signedHotel } };
+        }
+      });
+
+      return { ...result, rows: await Promise.all(rows) };
     } catch (error) {
-      this._logger.log(error.message);
+      this._logger.error(error.message);
       throw new BadRequestException(error.message);
     }
   }
@@ -261,7 +497,7 @@ export class PmsService {
       });
       return { ...result, rows: await Promise.all(rows) };
     } catch (error) {
-      this._logger.log(error.message);
+      this._logger.error(error.message);
       throw new BadRequestException(error.message);
     }
   }
@@ -314,17 +550,7 @@ export class PmsService {
         customPackage: await Promise.all(activities),
       };
     } catch (error) {
-      this._logger.log(error.message);
-      throw new BadRequestException(error.message);
-    }
-  }
-
-  async update(id: string, updatePmDto: UpdatePmDto) {
-    try {
-      this._logger.log(`Updating PMS with id ${id}`);
-      return { message: 'not implemented' };
-    } catch (error) {
-      this._logger.log(error.message);
+      this._logger.error(error.message);
       throw new BadRequestException(error.message);
     }
   }
@@ -344,7 +570,7 @@ export class PmsService {
         },
       });
     } catch (error) {
-      this._logger.log(error.message);
+      this._logger.error(error.message);
       throw new BadRequestException(error.message);
     }
   }

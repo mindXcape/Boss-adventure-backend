@@ -55,9 +55,6 @@ export class HotelsController {
 
   @Public()
   @ApiOperation({ summary: 'List all branches' })
-  // @ApiQuery({
-  //   type: QueryHotelDto,
-  // })
   @ApiResponse({
     status: 200,
     description: 'The found record',
