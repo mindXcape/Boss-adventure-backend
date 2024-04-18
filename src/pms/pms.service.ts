@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { CreatePmDto } from './dto/create-pm.dto';
 import { UpdatePmDto } from './dto/update-pm.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -12,6 +12,21 @@ import { paginate } from 'src/utils/paginate';
 export class PmsService {
   private readonly _logger = new Logger('PMS Service');
   constructor(private prisma: PrismaService, private awsService: AwsService) {}
+
+  private async getUserSignedUrl(items: any[] | any) {
+    if (Array.isArray(items)) {
+      return await Promise.all(
+        items.map(async item => {
+          if (item.profileImage === null) return item;
+          const url = await this.awsService.getSignedUrlFromS3(item.profileImage);
+          return { ...item, profileImage: url };
+        }),
+      );
+    }
+    if (items.profileImage === null) return items;
+    const url = await this.awsService.getSignedUrlFromS3(items.profileImage);
+    return { ...items, profileImage: url };
+  }
 
   private async getSignedUrl(items: any[] | any) {
     if (Array.isArray(items)) {
@@ -249,9 +264,19 @@ export class PmsService {
       await this.validateDto(updatePmDto);
 
       const { activities, groupId } = updatePmDto;
+      if (!activities) throw new BadRequestException('Activities is required');
+
       const newActivities = {
         activity: [],
       };
+
+      const pms = await this.prisma.pMS.findUnique({
+        where: {
+          id,
+        },
+      });
+
+      if (!pms) throw new NotFoundException('PMS does not exist');
 
       const result = await this.prisma.$transaction(async prisma => {
         for (const data of activities) {
@@ -277,9 +302,9 @@ export class PmsService {
           where: { id },
           data: {
             groupId,
-            leaderId: updatePmDto.leaderId,
-            guideId: updatePmDto.guideId,
-            packageId: updatePmDto.packageId,
+            leaderId: updatePmDto.leaderId || pms.leaderId,
+            guideId: updatePmDto.guideId || pms.guideId,
+            packageId: updatePmDto.packageId || pms.packageId,
             customPackage: newActivities,
           },
           include: {
@@ -447,6 +472,7 @@ export class PmsService {
             OR: [
               { group: { groupId: { contains: query.search || '', mode: 'insensitive' } } },
               { leader: { name: { contains: query.search || '', mode: 'insensitive' } } },
+              { package: { name: { contains: query.search || '', mode: 'insensitive' } } },
             ],
           },
           include: {
@@ -460,12 +486,14 @@ export class PmsService {
                 roles: true,
                 name: true,
                 id: true,
+                profileImage: true,
               },
             },
             guide: {
               select: {
                 roles: true,
                 name: true,
+                profileImage: true,
                 id: true,
               },
             },
@@ -483,11 +511,15 @@ export class PmsService {
         },
       );
       const rows = result.rows.map(async (item: any) => {
+        const signedLeader = await this.getUserSignedUrl(item.leader);
+        const signedGuide = await this.getUserSignedUrl(item.guide);
         const activities = item.customPackage.activity.map(async (activity: any) => {
           const booking = await this.findBooking(activity.bookingId);
           return {
             ...activity,
             booking,
+            guide: signedGuide,
+            leader: signedLeader,
           };
         });
         return {
@@ -519,12 +551,14 @@ export class PmsService {
             select: {
               roles: true,
               name: true,
+              profileImage: true,
               id: true,
             },
           },
           guide: {
             select: {
               roles: true,
+              profileImage: true,
               name: true,
               id: true,
             },
@@ -538,6 +572,8 @@ export class PmsService {
         },
       });
 
+      const signedLeader = await this.getUserSignedUrl(pms.leader);
+      const signedGuide = await this.getUserSignedUrl(pms.guide);
       const activities = pms.customPackage?.activity.map(async (activity: any) => {
         const booking = await this.findBooking(activity.bookingId);
         return {
@@ -548,6 +584,8 @@ export class PmsService {
       return {
         ...pms,
         customPackage: await Promise.all(activities),
+        guide: signedGuide,
+        leader: signedLeader,
       };
     } catch (error) {
       this._logger.error(error.message);
