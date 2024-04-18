@@ -47,13 +47,13 @@ export class PmsService {
     try {
       this._logger.log('Creating a new booking');
       if (!data.hotelId && !data.lodgeId) {
-        throw new Error('HotelId or LodgeId is required');
+        throw new BadRequestException('HotelId or LodgeId is required');
       }
       if (data.hotelId && data.lodgeId) {
         throw new BadRequestException('Only one of HotelId or LodgeId should be provided');
       }
       if (data.hotelId && data.lodgeId) {
-        throw new Error('Only one of HotelId or LodgeId should be provided');
+        throw new NotFoundException('Only one of HotelId or LodgeId should be provided');
       }
 
       if (data.hotelId) {
@@ -63,7 +63,7 @@ export class PmsService {
         });
 
         if (!hotelExists) {
-          throw new Error(`Hotel with ID ${data.hotelId} does not exist.`);
+          throw new NotFoundException(`Hotel with ID ${data.hotelId} does not exist.`);
         }
       }
       if (data.lodgeId) {
@@ -72,7 +72,7 @@ export class PmsService {
           select: { id: true, name: true },
         });
         if (!lodgeExists) {
-          throw new Error(`Lodge with ID ${data.lodgeId} does not exist.`);
+          throw new NotFoundException(`Lodge with ID ${data.lodgeId} does not exist.`);
         }
       }
 
@@ -90,10 +90,10 @@ export class PmsService {
     try {
       this._logger.log(`Updating booking with id ${id}`);
       if (!data.hotelId && !data.lodgeId) {
-        throw new Error('HotelId or LodgeId is required');
+        throw new NotFoundException('HotelId or LodgeId is required');
       }
       if (data.hotelId && data.lodgeId) {
-        throw new Error('Only one of HotelId or LodgeId should be provided');
+        throw new NotFoundException('Only one of HotelId or LodgeId should be provided');
       }
       if (data.hotelId) {
         const hotelExists = await this.prisma.hotelBranch.findUnique({
@@ -101,7 +101,7 @@ export class PmsService {
           select: { id: true, name: true },
         });
         if (!hotelExists) {
-          throw new Error(`Hotel with ID ${data.hotelId} does not exist.`);
+          throw new NotFoundException(`Hotel with ID ${data.hotelId} does not exist.`);
         }
       }
       if (data.lodgeId) {
@@ -110,7 +110,7 @@ export class PmsService {
           select: { id: true, name: true },
         });
         if (!lodgeExists) {
-          throw new Error(`Lodge with ID ${data.lodgeId} does not exist.`);
+          throw new NotFoundException(`Lodge with ID ${data.lodgeId} does not exist.`);
         }
       }
       const booking = await this.prisma.booking.update({
@@ -138,7 +138,7 @@ export class PmsService {
           select: { id: true, name: true },
         });
         if (!lodgeExists) {
-          throw new Error(`Lodge with ID ${lodgeId} does not exist.`);
+          throw new NotFoundException(`Lodge with ID ${lodgeId} does not exist.`);
         }
       }
       if (hotelId) {
@@ -147,7 +147,7 @@ export class PmsService {
           select: { id: true, name: true },
         });
         if (!hotelExists) {
-          throw new Error(`Hotel with ID ${hotelId} does not exist.`);
+          throw new NotFoundException(`Hotel with ID ${hotelId} does not exist.`);
         }
       }
       const booking = await this.prisma.booking.findFirst({
@@ -157,6 +157,7 @@ export class PmsService {
           ...(hotelId && { hotelId: payload.hotelId }),
         },
       });
+      if (!booking) throw new NotFoundException('Booking does not exist');
       return booking;
     } catch (error) {
       this._logger.error(error.message);
@@ -184,6 +185,8 @@ export class PmsService {
           },
         },
       });
+
+      if (!booking) throw new NotFoundException('Booking does not exist');
 
       // If hotel is null, then it is a lodge
       // so we get the signed url of the lodge
@@ -571,6 +574,8 @@ export class PmsService {
           },
         },
       });
+
+      if (!pms) throw new NotFoundException('PMS does not exist');
 
       const signedLeader = await this.getUserSignedUrl(pms.leader);
       const signedGuide = await this.getUserSignedUrl(pms.guide);
