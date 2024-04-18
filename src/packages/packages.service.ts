@@ -128,6 +128,18 @@ export class PackagesService {
       if (!oldPackage) {
         throw new Error('Package does not exist');
       }
+
+      if (oldPackage.name !== updatePackageDto.name) {
+        const doesExit = await this.prismaService.franchisePackages.findUnique({
+          where: {
+            name: updatePackageDto.name,
+          },
+        });
+        if (doesExit) {
+          throw new BadRequestException('Package already exists. Package name should be unique.');
+        }
+      }
+
       this._logger.log(`Updating package with id ${id}`);
       const activities = {
         activity: [],
