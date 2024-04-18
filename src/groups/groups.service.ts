@@ -43,6 +43,30 @@ export class GroupsService {
         throw new BadRequestException('Group Id should be unique');
       }
 
+      // getch all the users and  check if they have the one role of leader and guide
+      const userlist = await this.prismaService.user.findMany({
+        where: {
+          id: {
+            in: clients,
+          },
+        },
+        include: {
+          roles: true,
+        },
+      });
+
+      // Validate user IDs
+      if (userlist.length !== clients.length) {
+        throw new BadRequestException('One or more user IDs do not exist');
+      }
+
+      // Group must have one leader and guide
+      const leader = userlist.filter(user => user.roles.some(role => role.roleId === 'LEADER'));
+      const guide = userlist.filter(user => user.roles.some(role => role.roleId === 'GUIDE'));
+      if (leader.length !== 1 || guide.length !== 1) {
+        throw new BadRequestException('Group must have one leader and guide');
+      }
+
       const users = clients.map(clientId => {
         return {
           user: {
