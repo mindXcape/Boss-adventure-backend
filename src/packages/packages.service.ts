@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { CreatePackageDto } from './dto/create-package.dto';
 import { UpdatePackageDto } from './dto/update-package.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -51,6 +51,9 @@ export class PackagesService {
         activity: [],
       };
       for (const data of createPackageDto.description) {
+        if (data.lodgeId && data.hotelId) {
+          throw new BadRequestException('You cannot select both hotel and lodge');
+        }
         activities.activity.push(data);
       }
       const createdPackage = await this.prismaService.franchisePackages.create({

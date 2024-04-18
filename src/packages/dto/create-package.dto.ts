@@ -15,6 +15,7 @@ export class ActivityDto {
     description: 'Date at which the activity will take place',
     example: '2022-12-31T23:59:59.999Z',
   })
+  @IsOptional()
   date: Date;
 
   @IsString()

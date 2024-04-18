@@ -521,12 +521,12 @@ export class PmsService {
           return {
             ...activity,
             booking,
-            guide: signedGuide,
-            leader: signedLeader,
           };
         });
         return {
           ...item,
+          guide: signedGuide,
+          leader: signedLeader,
           customPackage: await Promise.all(activities),
         };
       });
