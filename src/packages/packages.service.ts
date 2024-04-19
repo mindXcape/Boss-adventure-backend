@@ -56,7 +56,7 @@ export class PackagesService {
         }
 
         if (data.lodgeId) {
-          const lodge = await this.prismaService.lodge.findUnique({
+          const lodge = await this.prismaService.lodgeBranch.findUnique({
             where: {
               id: data.lodgeId,
             },
@@ -67,7 +67,7 @@ export class PackagesService {
         }
 
         if (data.hotelId) {
-          const hotel = await this.prismaService.hotel.findUnique({
+          const hotel = await this.prismaService.hotelBranch.findUnique({
             where: {
               id: data.hotelId,
             },
@@ -117,7 +117,34 @@ export class PackagesService {
       );
       const result = allPackages.rows.map(async (item: any) => {
         const franchise = await this.getSignedUrl(item.franchise);
-        return { ...item, franchise };
+        const newActivity = item.description.activity.map(async (a: any) => {
+          const hotelId = a.hotelId;
+          const lodgeId = a.lodgeId;
+          if (hotelId) {
+            const hotel = await this.prismaService.hotelBranch.findUnique({
+              where: {
+                id: hotelId,
+              },
+            });
+            if (!hotel) {
+              return a;
+            }
+            a.hotel = hotel;
+          }
+          if (lodgeId) {
+            const lodge = await this.prismaService.lodgeBranch.findUnique({
+              where: {
+                id: lodgeId,
+              },
+            });
+            if (!lodge) {
+              return a;
+            }
+            a.lodge = lodge;
+          }
+          return a;
+        });
+        return { ...item, franchise, description: { activity: await Promise.all(newActivity) } };
       });
 
       return {
@@ -133,11 +160,43 @@ export class PackagesService {
   async findOne(id: string) {
     this._logger.log(`Fetching package with id ${id}`);
 
-    return await this.prismaService.franchisePackages.findUnique({
+    const result: any = await this.prismaService.franchisePackages.findUnique({
       where: {
         id,
       },
     });
+    const newActivity = result.description.activity.map(async (a: any) => {
+      const hotelId = a.hotelId;
+      const lodgeId = a.lodgeId;
+      if (hotelId) {
+        const hotel = await this.prismaService.hotelBranch.findUnique({
+          where: {
+            id: hotelId,
+          },
+        });
+        if (!hotel) {
+          return a;
+        }
+        a.hotel = hotel;
+      }
+      if (lodgeId) {
+        const lodge = await this.prismaService.lodgeBranch.findUnique({
+          where: {
+            id: lodgeId,
+          },
+        });
+        if (!lodge) {
+          return a;
+        }
+        a.lodge = lodge;
+      }
+      return a;
+    });
+
+    return {
+      ...result,
+      description: { activity: await Promise.all(newActivity) },
+    };
   }
 
   async update(id: string, updatePackageDto: UpdatePackageDto) {
@@ -167,6 +226,31 @@ export class PackagesService {
         activity: [],
       };
       for (const data of updatePackageDto.description) {
+        if (data.lodgeId && data.hotelId) {
+          throw new BadRequestException('You cannot select both hotel and lodge');
+        }
+
+        if (data.lodgeId) {
+          const lodge = await this.prismaService.lodgeBranch.findUnique({
+            where: {
+              id: data.lodgeId,
+            },
+          });
+          if (!lodge) {
+            throw new BadRequestException(`Lodge branch with id ${data.lodgeId} does not exist`);
+          }
+        }
+
+        if (data.hotelId) {
+          const hotel = await this.prismaService.hotelBranch.findUnique({
+            where: {
+              id: data.hotelId,
+            },
+          });
+          if (!hotel) {
+            throw new BadRequestException(`Hotel branch with id ${data.hotelId} does not exist`);
+          }
+        }
         activities.activity.push(data);
       }
       return await this.prismaService.franchisePackages.update({
