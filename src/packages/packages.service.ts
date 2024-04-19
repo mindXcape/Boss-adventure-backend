@@ -54,6 +54,28 @@ export class PackagesService {
         if (data.lodgeId && data.hotelId) {
           throw new BadRequestException('You cannot select both hotel and lodge');
         }
+
+        if (data.lodgeId) {
+          const lodge = await this.prismaService.lodge.findUnique({
+            where: {
+              id: data.lodgeId,
+            },
+          });
+          if (!lodge) {
+            throw new BadRequestException(`Lodge branch with id ${data.lodgeId} does not exist`);
+          }
+        }
+
+        if (data.hotelId) {
+          const hotel = await this.prismaService.hotel.findUnique({
+            where: {
+              id: data.hotelId,
+            },
+          });
+          if (!hotel) {
+            throw new BadRequestException(`Hotel branch with id ${data.hotelId} does not exist`);
+          }
+        }
         activities.activity.push(data);
       }
       const createdPackage = await this.prismaService.franchisePackages.create({
