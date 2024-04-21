@@ -192,7 +192,7 @@ export class PmsService {
       // so we get the signed url of the lodge
       if (booking.hotel === null && booking.lodge !== null) {
         const signedLodge = await this.getSignedUrl(booking.lodge.lodge);
-        return { ...booking, hotel: { ...booking.hotel, lodge: signedLodge } };
+        return { ...booking, lodge: { ...booking.lodge, lodge: signedLodge } };
       }
 
       const signedHotel = await this.getSignedUrl(booking.hotel.hotel);
@@ -451,7 +451,7 @@ export class PmsService {
       const rows = result.rows.map(async (booking: any) => {
         if (booking.hotel === null && booking.lodge !== null) {
           const signedLodge = await this.getSignedUrl(booking.lodge.lodge);
-          return { ...booking, hotel: { ...booking.hotel, lodge: signedLodge } };
+          return { ...booking, lodge: { ...booking.lodge, lodge: signedLodge } };
         } else {
           const signedHotel = await this.getSignedUrl(booking.hotel.hotel);
           return { ...booking, hotel: { ...booking.hotel, hotel: signedHotel } };
