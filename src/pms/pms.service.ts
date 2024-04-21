@@ -546,32 +546,21 @@ export class PmsService {
         },
         include: {
           group: {
-            select: {
-              groupId: true,
+            include: {
+              UsersOnGroup: {
+                include: {
+                  user: {
+                    include: {
+                      roles: true,
+                    },
+                  },
+                },
+              },
             },
           },
-          leader: {
-            select: {
-              roles: true,
-              name: true,
-              profileImage: true,
-              id: true,
-            },
-          },
-          guide: {
-            select: {
-              roles: true,
-              profileImage: true,
-              name: true,
-              id: true,
-            },
-          },
-          package: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
+          leader: true,
+          guide: true,
+          package: true,
         },
       });
 
