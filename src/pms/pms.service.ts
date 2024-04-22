@@ -132,7 +132,7 @@ export class PmsService {
       const { lodgeId, hotelId } = payload;
       this._logger.log('Fetching booking');
       // check if hotel or lodge is valid
-      if (lodgeId) {
+      if (lodgeId && lodgeId !== '') {
         const lodgeExists = await this.prisma.lodgeBranch.findUnique({
           where: { id: lodgeId },
           select: { id: true, name: true },
@@ -141,7 +141,7 @@ export class PmsService {
           throw new NotFoundException(`Lodge with ID ${lodgeId} does not exist.`);
         }
       }
-      if (hotelId) {
+      if (hotelId && hotelId !== '') {
         const hotelExists = await this.prisma.hotelBranch.findUnique({
           where: { id: hotelId },
           select: { id: true, name: true },
@@ -190,7 +190,10 @@ export class PmsService {
 
       // If hotel is null, then it is a lodge
       // so we get the signed url of the lodge
-      if (booking.hotel === null && booking.lodge !== null) {
+      if (
+        (booking.hotel === null || booking.hotel === '') &&
+        (booking.lodge !== null || booking.lodge !== '')
+      ) {
         const signedLodge = await this.getSignedUrl(booking.lodge.lodge);
         return { ...booking, lodge: { ...booking.lodge, lodge: signedLodge } };
       }
