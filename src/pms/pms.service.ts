@@ -190,10 +190,7 @@ export class PmsService {
 
       // If hotel is null, then it is a lodge
       // so we get the signed url of the lodge
-      if (
-        (booking.hotel === null || booking.hotel === '') &&
-        (booking.lodge !== null || booking.lodge !== '')
-      ) {
+      if (booking.hotel === null && booking.lodge !== null) {
         const signedLodge = await this.getSignedUrl(booking.lodge.lodge);
         return { ...booking, lodge: { ...booking.lodge, lodge: signedLodge } };
       }
