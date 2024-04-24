@@ -7,6 +7,7 @@ import { Logger } from '@nestjs/common';
 import { CreateBooking } from './types/booking';
 import { QueryPackagesDto } from 'src/packages/dto/query-package.dto';
 import { paginate } from 'src/utils/paginate';
+import { CreateBookingDto, UpdateBookingDto } from './dto/create-booking.dto';
 
 @Injectable()
 export class PmsService {
@@ -86,12 +87,18 @@ export class PmsService {
     }
   }
 
-  async updateBooking(id: string, data: CreateBooking) {
+  async updateBooking(id: string, data: UpdateBookingDto) {
     try {
       this._logger.log(`Updating booking with id ${id}`);
-      if (!data.hotelId && !data.lodgeId) {
-        throw new NotFoundException('HotelId or LodgeId is required');
-      }
+
+      const bookingExists = await this.prisma.booking.findUnique({
+        where: {
+          id,
+        },
+      });
+
+      if (!bookingExists) throw new NotFoundException('Booking does not exist');
+
       if (data.hotelId && data.lodgeId) {
         throw new NotFoundException('Only one of HotelId or LodgeId should be provided');
       }
@@ -104,6 +111,7 @@ export class PmsService {
           throw new NotFoundException(`Hotel with ID ${data.hotelId} does not exist.`);
         }
       }
+
       if (data.lodgeId) {
         const lodgeExists = await this.prisma.lodgeBranch.findUnique({
           where: { id: data.lodgeId },
@@ -117,9 +125,16 @@ export class PmsService {
         where: {
           id,
         },
-        data,
+        data: {
+          status: data.status || bookingExists.status,
+          ...(data.date && { date: data.date }),
+          ...(data.hotelId && { hotelId: data.hotelId }),
+          ...(data.lodgeId && { lodgeId: data.lodgeId }),
+          ...(data.meal && { meal: data.meal }),
+          ...(data.comment && { comment: data.comment }),
+          ...(data.groupId && { groupId: data.groupId }),
+        },
       });
-      console.log('updated Booking: ', booking);
       return booking;
     } catch (error) {
       this._logger.error(error.message);
@@ -286,6 +301,10 @@ export class PmsService {
           const { date, description, hotelId, lodgeId, meal, name } = data;
           const booking = await this.findBookingByGroup({ hotelId, lodgeId, groupId });
           if (!booking) throw new BadRequestException('Booking does not exist');
+
+          if (!hotelId && !lodgeId) {
+            throw new NotFoundException('HotelId or LodgeId is required');
+          }
 
           const newBooking = await this.updateBooking(booking.id, {
             date,

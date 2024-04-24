@@ -200,8 +200,10 @@ Table pms {
 Table bookings {
   id String [pk]
   date DateTime [not null]
+  status BookingStatus [not null, default: 'PENDING']
   meal String [not null]
   hotelId String
+  comment String [default: '']
   hotel hotel_branches
   lodgeId String
   lodge lodge_branches
@@ -211,11 +213,22 @@ Table bookings {
   updatedAt DateTime [not null]
 }
 
+Table vehicles {
+  id String [pk]
+  model String
+  image String
+  number String
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+}
+
 Enum Role {
   ADMIN
   CLIENT
   GUIDE
   LEADER
+  PORTER
+  ASST_GUIDE
 }
 
 Enum Designation {
@@ -231,6 +244,12 @@ Enum Status {
   ACTIVE
   INACTIVE
   BLOCKED
+}
+
+Enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
 }
 
 Ref: users.bankId > banks.id [delete: Set Null]

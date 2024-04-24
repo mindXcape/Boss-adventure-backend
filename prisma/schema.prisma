@@ -26,6 +26,8 @@ enum Role {
   CLIENT
   GUIDE
   LEADER
+  PORTER
+  ASST_GUIDE
 }
 
 enum Designation {
@@ -41,6 +43,12 @@ enum Status {
   ACTIVE
   INACTIVE
   BLOCKED
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
 }
 
 model Admin {
@@ -276,11 +284,13 @@ model PMS {
 }
 
 model Booking {
-  id      String       @id @default(uuid())
+  id      String        @id @default(uuid())
   date    DateTime
+  status  BookingStatus @default(PENDING)
   meal    String
   hotelId String?
-  hotel   HotelBranch? @relation(fields: [hotelId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  comment String?       @default("")
+  hotel   HotelBranch?  @relation(fields: [hotelId], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   lodgeId String?
   lodge   LodgeBranch? @relation(fields: [lodgeId], references: [id], onDelete: SetNull, onUpdate: Cascade)
@@ -292,4 +302,16 @@ model Booking {
   updatedAt DateTime @updatedAt
 
   @@map("bookings")
+}
+
+model Vehicle {
+  id     String  @id @default(uuid())
+  model  String?
+  image  String?
+  number String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("vehicles")
 }

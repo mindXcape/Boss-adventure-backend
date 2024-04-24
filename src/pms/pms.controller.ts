@@ -8,6 +8,7 @@ import {
   Delete,
   Query,
   UseGuards,
+  BadRequestException,
 } from '@nestjs/common';
 import { PmsService } from './pms.service';
 import { CreatePmDto } from './dto/create-pm.dto';
@@ -18,6 +19,7 @@ import { QueryPackagesDto } from 'src/packages/dto/query-package.dto';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.auth.guard';
 import { RoleGuard } from 'src/auth/guards/role.guard';
+import { CreateBookingDto, UpdateBookingDto } from './dto/create-booking.dto';
 
 @Controller('pms')
 @ApiBearerAuth('access-token')
@@ -58,7 +60,7 @@ export class PmsController {
   @ApiResponse({
     status: 200,
     description: 'The found record',
-    type: [CreatePmDto],
+    type: [CreateBookingDto],
   })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   @Get()
@@ -71,11 +73,42 @@ export class PmsController {
   @ApiResponse({
     status: 200,
     description: 'The found record',
-    type: CreatePmDto,
+    type: CreateBookingDto,
   })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   findOne(@Param('id') id: string) {
     return this.pmsService.findOne(id);
+  }
+
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles('ADMIN')
+  @Get('bookings/:id')
+  @ApiOperation({ summary: 'Find a booking' })
+  @ApiResponse({
+    status: 200,
+    description: 'The found record',
+    type: CreatePmDto,
+  })
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
+  findOneBooking(@Param('id') id: string) {
+    if (!id) throw new BadRequestException('Booking ID is required');
+    return this.pmsService.findBooking(id);
+  }
+
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles('ADMIN')
+  @ApiOperation({ summary: 'Update a Booking' })
+  @ApiResponse({
+    status: 200,
+    description: 'The found record',
+    type: CreateBookingDto,
+  })
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
+  @Patch('bookings/:id')
+  updateBooking(@Param('id') id: string, @Body() updateBookingDto: UpdateBookingDto) {
+    if (!id) throw new BadRequestException('Booking ID is required');
+
+    return this.pmsService.updateBooking(id, updateBookingDto);
   }
 
   @UseGuards(JwtAuthGuard, RoleGuard)
