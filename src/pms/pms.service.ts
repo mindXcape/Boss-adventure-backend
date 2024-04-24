@@ -436,13 +436,23 @@ export class PmsService {
   async findAllBookings(query: QueryPackagesDto) {
     try {
       this._logger.log('Fetching all bookings');
+      this.prisma.booking.findMany({
+        where: {
+          OR: [
+            { hotel: { hotel: { name: { contains: query.search || '', mode: 'insensitive' } } } },
+            { lodge: { lodge: { name: { contains: query.search || '', mode: 'insensitive' } } } },
+          ],
+        },
+      });
       const result = await paginate(
         this.prisma.booking,
         {
           where: {
             OR: [
-              { hotelId: { contains: query.search || '', mode: 'insensitive' } },
-              { lodgeId: { contains: query.search || '', mode: 'insensitive' } },
+              { hotel: { name: { contains: query.search || '', mode: 'insensitive' } } },
+              { lodge: { name: { contains: query.search || '', mode: 'insensitive' } } },
+              { hotel: { hotel: { name: { contains: query.search || '', mode: 'insensitive' } } } },
+              { lodge: { lodge: { name: { contains: query.search || '', mode: 'insensitive' } } } },
               { group: { groupId: { contains: query.search || '', mode: 'insensitive' } } },
             ],
           },

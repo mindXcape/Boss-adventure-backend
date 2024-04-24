@@ -112,7 +112,14 @@ const loadUsers = async () => {
         },
         roles: {
           create: {
-            roleId: faker.helpers.arrayElement(['ADMIN', 'CLIENT', 'GUIDE', 'LEADER']),
+            roleId: faker.helpers.arrayElement([
+              'ADMIN',
+              'CLIENT',
+              'GUIDE',
+              'LEADER',
+              'PORTER',
+              'ASST_GUIDE',
+            ]),
           },
         },
         professional: {
