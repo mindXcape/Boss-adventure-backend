@@ -8,6 +8,14 @@ enum ROLE {
   USER = 'CLIENT',
 }
 
+const images = [
+  'e270e0df334606f951a89162eaf3614e2e131dfa398ee459a913715d2392a9241714028627549.jpg',
+  '62305731fa5683a42aad8fffc15e23fc4bb055ccad709a5b4625feb5786ba42b1714028654322.jpg',
+  '27f77530e0aeff199afd6b39a0f990345f98497b6fbe9a68f8997372d42c40191714028984715.jpg',
+  'cdb309726e4743acfaba288f8184523b4735700ffe1534688f4846c367bd9c6a1714029024709.jpg',
+  '8f3b5edb8de2838a952a6d621a4cabb4ed7c4952f66513669b542179a16058c11714029046619.jpg',
+];
+
 export const users = [
   {
     name: 'Dipesh Kumar Sah',
@@ -149,6 +157,117 @@ const loadUsers = async () => {
   console.log('100 Users seed data loaded');
 };
 
+const loadFranchises = async () => {
+  const franchises = [
+    'Mount Everest',
+    'Kalapatthar',
+    'Annapurna Base Camp',
+    'Langtang',
+    'Manaslu',
+    'Gosaikunda',
+    'Mardi Himal',
+    'Upper Mustang',
+    'Rara Lake',
+    'Dolpo',
+    'Kanchenjunga',
+    'Rolwaling',
+    'Ganesh Himal',
+    'Dhaulagiri',
+  ];
+
+  franchises.forEach(async franchise => {
+    await prisma.franchise.create({
+      data: {
+        name: franchise,
+        image: faker.helpers.arrayElement(images),
+      },
+    });
+  });
+};
+
+const loadHotels = async () => {
+  const hotels = [
+    {
+      name: 'Hotel Everest View',
+      image: faker.helpers.arrayElement(images),
+    },
+    {
+      name: 'Hotel Annapurna',
+      image: faker.helpers.arrayElement(images),
+    },
+    {
+      name: 'Hotel Yak and Yeti',
+      image: faker.helpers.arrayElement(images),
+    },
+    {
+      name: 'Hotel Radisson',
+      image: faker.helpers.arrayElement(images),
+    },
+  ];
+
+  const branches = Array.from({ length: 10 }, () => ({
+    name: faker.internet.userName(),
+    state: faker.location.state(),
+    city: faker.location.city(),
+    address: faker.location.streetAddress(),
+    phone: faker.phone.number(),
+    email: faker.internet.email(),
+    poc: faker.person.fullName(),
+    pocPhone: faker.phone.number(),
+    pocDesignation: faker.person.jobType(),
+  }));
+  hotels.forEach(async hotel => {
+    await prisma.hotel.create({
+      data: {
+        name: hotel.name,
+        image: hotel.image,
+        branch: {
+          createMany: {
+            data: branches,
+          },
+        },
+      },
+    });
+  });
+};
+
+const loadLodge = async () => {
+  const lodges = [
+    {
+      name: 'Lodge Everest View',
+      image: faker.helpers.arrayElement(images),
+    },
+    {
+      name: 'Lodge Annapurna',
+      image: faker.helpers.arrayElement(images),
+    },
+  ];
+
+  const branches = Array.from({ length: 5 }, () => ({
+    name: faker.internet.userName(),
+    state: faker.location.state(),
+    city: faker.location.city(),
+    address: faker.location.streetAddress(),
+    phone: faker.phone.number(),
+    email: faker.internet.email(),
+    poc: faker.person.fullName(),
+    pocPhone: faker.phone.number(),
+    pocDesignation: faker.person.jobType(),
+  }));
+
+  lodges.forEach(async lodge => {
+    await prisma.lodge.create({
+      data: {
+        name: lodge.name,
+        image: lodge.image,
+        branch: {
+          createMany: { data: branches },
+        },
+      },
+    });
+  });
+};
+
 const admins = [
   {
     name: 'Dipesh Kumar Sah',
@@ -190,6 +309,7 @@ const loadProductionAdmins = async () => {
   }
   console.log('Admin seed data loaded');
 };
+
 const loadProductionSeed = async () => {
   try {
     console.log('Loading production seed data');
@@ -208,6 +328,9 @@ async function main() {
     await loadAdmin();
     await loadBanks();
     await loadUsers();
+    await loadFranchises();
+    await loadHotels();
+    await loadLodge();
   }
 }
 

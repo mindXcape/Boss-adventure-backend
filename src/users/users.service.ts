@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import { CreateBankDto, CreateUserDto, UpdateUserDto } from './dto/user.dto';
+import { AwsService } from 'src/aws/aws.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { paginate } from 'src/utils/paginate';
 import { PaginateQueryDto } from './dto/paginateUser.dto';
-import { AwsService } from 'src/aws/aws.service';
+import { CreateBankDto, CreateUserDto, UpdateUserDto } from './dto/user.dto';
 
 @Injectable()
 export class UsersService {

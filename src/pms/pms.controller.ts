@@ -68,6 +68,7 @@ export class PmsController {
     return this.pmsService.findAllBookings(query);
   }
 
+  @Public()
   @Get(':id')
   @ApiOperation({ summary: 'Find a PMS' })
   @ApiResponse({
