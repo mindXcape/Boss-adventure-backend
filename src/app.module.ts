@@ -15,6 +15,7 @@ import { PackagesModule } from './packages/packages.module';
 import { FranchisesModule } from './franchises/franchises.module';
 import { GroupsModule } from './groups/groups.module';
 import { PmsModule } from './pms/pms.module';
+import { VehiclesModule } from './vehicles/vehicles.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { PmsModule } from './pms/pms.module';
     FranchisesModule,
     GroupsModule,
     PmsModule,
+    VehiclesModule,
   ],
 })
 export class AppModule {}

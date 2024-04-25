@@ -25,6 +25,16 @@ export const users = [
     email: 'bus-adventuresh@mailinator.com',
   },
   {
+    name: 'Manjul Mindxcape',
+    roles: [ROLE.ADMIN],
+    email: 'manjul.mindxcape@gmail.com',
+  },
+  {
+    name: 'Dipesh Mindxcape',
+    roles: [ROLE.ADMIN],
+    email: 'dipesh.mindxcape@gmail.com',
+  },
+  {
     name: 'Staff bus-adventures',
     roles: [ROLE.USER],
     email: 'staff-bus-adventures@mailinator.com',

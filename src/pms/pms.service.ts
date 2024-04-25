@@ -7,7 +7,7 @@ import { Logger } from '@nestjs/common';
 import { CreateBooking } from './types/booking';
 import { QueryPackagesDto } from 'src/packages/dto/query-package.dto';
 import { paginate } from 'src/utils/paginate';
-import { CreateBookingDto, UpdateBookingDto } from './dto/create-booking.dto';
+import { UpdateBookingDto } from './dto/create-booking.dto';
 
 @Injectable()
 export class PmsService {
@@ -436,14 +436,6 @@ export class PmsService {
   async findAllBookings(query: QueryPackagesDto) {
     try {
       this._logger.log('Fetching all bookings');
-      this.prisma.booking.findMany({
-        where: {
-          OR: [
-            { hotel: { hotel: { name: { contains: query.search || '', mode: 'insensitive' } } } },
-            { lodge: { lodge: { name: { contains: query.search || '', mode: 'insensitive' } } } },
-          ],
-        },
-      });
       const result = await paginate(
         this.prisma.booking,
         {
