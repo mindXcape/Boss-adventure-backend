@@ -277,6 +277,8 @@ model PMS {
 
   customPackage Json?
 
+  additionalInfo Json?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -308,7 +310,7 @@ model Vehicle {
   id     String  @id @default(uuid())
   model  String?
   image  String?
-  number String?
+  number String  @unique
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

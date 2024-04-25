@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsString, IsOptional, IsArray, ValidateNested } from 'class-validator';
+import { IsString, IsOptional, IsArray, IsObject, ValidateNested } from 'class-validator';
 
 export class CreatePmDto {
   @IsString()
@@ -38,6 +38,29 @@ export class CreatePmDto {
     description: 'List of activities in the package',
   })
   activities: PmsActivitiesDto[];
+
+  @IsObject()
+  @IsOptional()
+  @ApiProperty({
+    description: 'Additional information',
+    example: `
+    {
+      arrival: {
+        date: '2022-12-31T23:59:59.999Z',
+        flightNumber: 'KHA-2-053',
+        from: 'Yangon',
+        to: 'Mandalay',
+      }
+      departure: {
+        date: '2022-12-31T23:59:59.999Z',
+        flightNumber: 'KHA-2-053',
+        from: 'Mandalay',
+        to: 'Yangon',
+      }
+    }
+    `,
+  })
+  additionalInfo: any;
 }
 
 export class PmsActivitiesDto {
@@ -84,4 +107,33 @@ export class PmsActivitiesDto {
     example: '2b2cxl30-123132-123123',
   })
   lodgeId: string;
+
+  @IsString()
+  @ApiProperty({
+    description: 'Activity transfer type',
+    example: 'DRIVE | Flight | Trekking | AIRPORT ',
+  })
+  transfer: string;
+
+  @IsOptional()
+  @ApiProperty({
+    example: `
+      "transferDetails": {
+        "transferType": "DRIVE",
+        "vehicleNumber": "KHA-2-053",
+        "driverId": "sfs-asfsa-5saf-afsaf",
+        "from": "Airport",
+        "to": "Hotel",
+        "hiringCompany": "Yangon Taxi Service",
+      }
+      "transferDetails": {
+        "transferType": "FLIGHT",
+        "flightNumber": "KHA-2-053",
+        "from": "Airport",
+        "to": "Hotel",
+      }
+    `,
+    description: 'Json Details of the transfer',
+  })
+  transferDetails: any;
 }

@@ -368,7 +368,7 @@ export class PmsService {
 
   async create(createPmDto: CreatePmDto) {
     try {
-      const { groupId, activities } = createPmDto;
+      const { groupId, activities, additionalInfo } = createPmDto;
       this._logger.log(`Creating a new PMS for group ${groupId}`);
 
       await this.validateDto(createPmDto);
@@ -379,13 +379,16 @@ export class PmsService {
 
       const result = await this.prisma.$transaction(async prisma => {
         for (const data of activities) {
-          const { date, description, hotelId, lodgeId, meal, name } = data;
+          const { date, description, hotelId, lodgeId, meal, name, transfer, transferDetails } =
+            data;
           const booking = await this.createBooking({ date, hotelId, lodgeId, meal, groupId });
 
           newActivities.activity.push({
             bookingId: booking.id,
             description,
             name,
+            transfer,
+            transferDetails,
           });
         }
         return await prisma.pMS.create({
@@ -395,6 +398,7 @@ export class PmsService {
             guideId: createPmDto.guideId,
             packageId: createPmDto.packageId,
             customPackage: newActivities,
+            additionalInfo,
           },
           include: {
             group: {
