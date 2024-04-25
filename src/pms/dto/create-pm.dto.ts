@@ -111,7 +111,7 @@ export class PmsActivitiesDto {
   @IsString()
   @ApiProperty({
     description: 'Activity transfer type',
-    example: 'DRIVE | Flight | Trekking | AIRPORT ',
+    example: 'DRIVE | Flight | Trekking ',
   })
   transfer: string;
 
