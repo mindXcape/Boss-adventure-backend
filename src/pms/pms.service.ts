@@ -8,6 +8,7 @@ import { CreateBooking } from './types/booking';
 import { QueryPackagesDto } from 'src/packages/dto/query-package.dto';
 import { paginate } from 'src/utils/paginate';
 import { UpdateBookingDto } from './dto/create-booking.dto';
+import { warn } from 'console';
 
 @Injectable()
 export class PmsService {
@@ -595,6 +596,39 @@ export class PmsService {
       const signedGuide = await this.getUserSignedUrl(pms.guide);
       const activities = pms.customPackage?.activity.map(async (activity: any) => {
         const booking = await this.findBooking(activity.bookingId);
+        if (activity.transfer && activity.transferDetails) {
+          // check if transfer is drive and if drive get vehicle objet and driver object from transferDetails
+          if (activity.transfer === 'DRIVE') {
+            const { driverId, vehicleNumber } = activity.transferDetails;
+            const driver = await this.prisma.user.findUnique({
+              where: {
+                id: driverId,
+                roles: {
+                  some: {
+                    roleId: {
+                      equals: 'ADMIN',
+                    },
+                  },
+                },
+                designation: 'DRIVER',
+              },
+            });
+            const vehicle = await this.prisma.vehicle.findUnique({
+              where: {
+                number: vehicleNumber,
+              },
+            });
+            return {
+              ...activity,
+              booking,
+              transferDetails: {
+                ...activity.transferDetails,
+                ...(driver && { driver }),
+                ...(vehicle && { vehicle: await this.getSignedUrl(vehicle) }),
+              },
+            };
+          }
+        }
         return {
           ...activity,
           booking,

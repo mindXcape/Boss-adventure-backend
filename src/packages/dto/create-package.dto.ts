@@ -4,6 +4,7 @@ import { IsArray, IsNumber, IsOptional, IsString, ValidateNested } from 'class-v
 
 export class ActivityDto {
   @IsString()
+  @IsOptional()
   @ApiProperty({
     description: 'Activity transfer type',
     example: 'DRIVE | Flight | Trekking ',

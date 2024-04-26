@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Role } from '@prisma/client';
+import { Designation, Role } from '@prisma/client';
 import { Transform } from 'class-transformer';
 import { IsOptional, IsString } from 'class-validator';
 
@@ -23,6 +23,17 @@ export class PaginateQueryDto {
     example: 10,
   })
   perPage: string;
+
+  @Transform(({ value }) => value.toUpperCase(), { toClassOnly: true })
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    description: 'The role of the user',
+    required: false,
+    type: Role,
+    example: 'ADMIN',
+  })
+  designation: Designation;
 
   @Transform(({ value }) => value.toUpperCase(), { toClassOnly: true })
   @IsString()

@@ -165,10 +165,25 @@ export class UsersService {
                 },
               },
             },
-            name: {
-              contains: query.name || '',
-              mode: 'insensitive',
-            },
+            ...(query.designation && {
+              designation: {
+                in: [query.designation],
+              },
+            }),
+            OR: [
+              {
+                name: {
+                  contains: query.name || '',
+                  mode: 'insensitive',
+                },
+              },
+              {
+                email: {
+                  contains: query.name || '',
+                  mode: 'insensitive',
+                },
+              },
+            ],
           },
           include: {
             address: true,

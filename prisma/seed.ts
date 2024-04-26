@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Role } from '@prisma/client';
 import { faker } from '@faker-js/faker';
 
 const prisma = new PrismaClient();
@@ -110,6 +110,14 @@ const loadUsers = async () => {
   const totalBanks = banks.length - 1;
 
   for (let i = 0; i < 100; i++) {
+    const role: Role = faker.helpers.arrayElement([
+      'ADMIN',
+      'CLIENT',
+      'GUIDE',
+      'LEADER',
+      'PORTER',
+      'ASST_GUIDE',
+    ]);
     await prisma.user.create({
       data: {
         name: faker.person.firstName(),
@@ -118,6 +126,8 @@ const loadUsers = async () => {
         status: faker.helpers.arrayElement(['ACTIVE', 'INACTIVE', 'BLOCKED']),
         dob: faker.date.past(),
         accountNumber: faker.finance.accountNumber(),
+        designation:
+          role === 'ADMIN' ? faker.helpers.arrayElement(['DRIVER', 'ACCOUNT', 'MANAGER']) : null,
         bankId: banks[Math.floor(Math.random() * totalBanks)].id,
         address: {
           create: {
@@ -130,14 +140,7 @@ const loadUsers = async () => {
         },
         roles: {
           create: {
-            roleId: faker.helpers.arrayElement([
-              'ADMIN',
-              'CLIENT',
-              'GUIDE',
-              'LEADER',
-              'PORTER',
-              'ASST_GUIDE',
-            ]),
+            roleId: role,
           },
         },
         professional: {
