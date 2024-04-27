@@ -612,6 +612,18 @@ export class PmsService {
                 },
                 designation: 'DRIVER',
               },
+              include: {
+                address: true,
+                professional: true,
+                roles: true,
+                bank: {
+                  select: {
+                    id: true,
+                    name: true,
+                    class: true,
+                  },
+                },
+              },
             });
             const vehicle = await this.prisma.vehicle.findUnique({
               where: {
@@ -623,8 +635,8 @@ export class PmsService {
               booking,
               transferDetails: {
                 ...activity.transferDetails,
-                ...(driver && { driver }),
-                ...(vehicle && { vehicle: await this.getSignedUrl(vehicle) }),
+                driver,
+                vehicle,
               },
             };
           }
