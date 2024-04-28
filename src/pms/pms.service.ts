@@ -299,7 +299,8 @@ export class PmsService {
 
       const result = await this.prisma.$transaction(async prisma => {
         for (const data of activities) {
-          const { date, description, hotelId, lodgeId, meal, name } = data;
+          const { date, description, hotelId, lodgeId, meal, name, transfer, transferDetails } =
+            data;
           const booking = await this.findBookingByGroup({ hotelId, lodgeId, groupId });
           if (!booking) throw new BadRequestException('Booking does not exist');
 
@@ -319,6 +320,8 @@ export class PmsService {
             bookingId: newBooking.id,
             description,
             name,
+            transfer,
+            transferDetails,
           });
         }
         return await prisma.pMS.update({
@@ -329,6 +332,7 @@ export class PmsService {
             guideId: updatePmDto.guideId || pms.guideId,
             packageId: updatePmDto.packageId || pms.packageId,
             customPackage: newActivities,
+            additionalInfo: updatePmDto.additionalInfo || pms.additionalInfo,
           },
           include: {
             group: {
