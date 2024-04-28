@@ -38,6 +38,11 @@ export const users = [
     email: 'manjul.mindxcape@gmail.com',
   },
   {
+    name: 'Anwesh Mindxcape',
+    roles: [ROLE.ADMIN],
+    email: 'anwesh.mindxcape@gmail.com',
+  },
+  {
     name: 'Dipesh Mindxcape',
     roles: [ROLE.ADMIN],
     email: 'dipesh.mindxcape@gmail.com',
