@@ -577,7 +577,9 @@ export class PmsService {
                 include: {
                   user: {
                     include: {
+                      professional: true,
                       roles: true,
+                      address: true,
                     },
                   },
                 },
