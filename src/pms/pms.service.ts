@@ -357,7 +357,7 @@ export class PmsService {
         activity: [],
       };
 
-      const pms = await this.prisma.pMS.findUnique({
+      const pms: any = await this.prisma.pMS.findUnique({
         where: {
           id,
         },
@@ -385,23 +385,48 @@ export class PmsService {
           });
 
           if (transfer === 'DRIVE') {
+            this._logger.log('Drive transfer');
             if (!transferDetails || !transferDetails.driverId || !transferDetails.vehicleNumber) {
               throw new BadRequestException(
                 'DriverId and VehicleNumber is required for Drive transfer',
               );
             }
+
+            const vehicleExist = await prisma.vehicle.findUnique({
+              where: {
+                number: transferDetails.vehicleNumber,
+              },
+            });
+            if (!vehicleExist) throw new BadRequestException('Vehicle does not exist');
+
             let vehicle;
 
             if (!data.vehicleBookingId) {
-              vehicle = await this.createVehicleBooking(prisma, {
-                vehicleId: transferDetails.vehicleNumber,
-                driverId: transferDetails.driverId,
-                date,
+              this._logger.log('No booking id found, creating a new vehicle booking');
+              const driverExits = await prisma.user.findUnique({
+                where: {
+                  id: transferDetails.driverId,
+                  roles: {
+                    some: {
+                      roleId: 'ADMIN',
+                    },
+                  },
+                  designation: 'DRIVER',
+                },
+              });
+              if (!driverExits) throw new BadRequestException('Driver does not exist');
+
+              vehicle = await prisma.vehicleBooking.create({
+                data: {
+                  vehicleId: vehicleExist.id,
+                  driverId: transferDetails.driverId,
+                  date,
+                },
               });
             } else {
               const v = await this.findVehicleBooking(data.vehicleBookingId);
               if (!v) throw new BadRequestException('Vehicle booking does not exist');
-
+              this._logger.log('Booking found, updating vehicle booking');
               vehicle = await this.updateVehicleBooking(data.vehicleBookingId, {
                 vehicleId: transferDetails.vehicleNumber,
                 driverId: transferDetails.driverId,
@@ -412,7 +437,7 @@ export class PmsService {
             }
 
             if (!vehicle) throw new BadRequestException('Vehicle booking failed');
-            return newActivities.activity.push({
+            newActivities.activity.push({
               bookingId: newBooking.id,
               description,
               name,
@@ -420,6 +445,26 @@ export class PmsService {
               transferDetails,
               vehicleBookingId: vehicle.id,
             });
+            continue;
+          }
+
+          if (transfer === 'FLIGHT') {
+            if (!transferDetails || !transferDetails.flightNumber) {
+              throw new BadRequestException(
+                'FlightNumber and Airline is required for Flight transfer',
+              );
+            }
+            // check if previously what was the transfer type and if it was drive then made status as cancelled in the vehicle booking
+            const abc = pms.customPackage.activity.map(async activity => {
+              if (activity.transfer === 'DRIVE' && activity.vehicleBookingId) {
+                this._logger.log("Found previous drive transfer, updating it's status");
+                await prisma.vehicleBooking.update({
+                  where: { id: activity.vehicleBookingId },
+                  data: { status: 'CANCELLED' },
+                });
+              }
+            });
+            await Promise.all(abc);
           }
 
           newActivities.activity.push({
