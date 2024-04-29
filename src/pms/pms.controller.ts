@@ -55,6 +55,19 @@ export class PmsController {
   }
 
   @Public()
+  @Get('/vehicle-bookings')
+  @ApiOperation({ summary: 'List all Vehicles bookings' })
+  @ApiResponse({
+    status: 200,
+    description: 'The found record',
+    type: [CreateBookingDto],
+  })
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
+  findAllVehicleBookings(@Query() query: QueryPackagesDto) {
+    return this.pmsService.findAllVehicleBookings(query);
+  }
+
+  @Public()
   @Get('/bookings')
   @ApiOperation({ summary: 'List all bookings' })
   @ApiResponse({
@@ -63,9 +76,21 @@ export class PmsController {
     type: [CreateBookingDto],
   })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
-  @Get()
   findAllBookings(@Query() query: QueryPackagesDto) {
     return this.pmsService.findAllBookings(query);
+  }
+
+  @Public()
+  @Get('/vehicle-bookings/:id')
+  @ApiOperation({ summary: 'Find a vehicle booking.' })
+  @ApiResponse({
+    status: 200,
+    description: 'The found record',
+    type: CreateBookingDto,
+  })
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
+  findOneVehicleBooking(@Param('id') id: string) {
+    return this.pmsService.findVehicleBooking(id);
   }
 
   @Public()

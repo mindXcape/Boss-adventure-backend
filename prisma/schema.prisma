@@ -68,21 +68,22 @@ model Admin {
 }
 
 model User {
-  id            String               @id @default(uuid())
-  name          String?
-  email         String               @unique
-  phone         String?
-  profileImage  String?
-  status        Status?              @default(ACTIVE)
-  roles         UserRole[]
-  dob           DateTime?
-  address       Address?
-  bankId        String?
-  bank          Bank?                @relation(fields: [bankId], references: [id], onDelete: SetNull)
-  professional  ProfessionalProfile?
-  accountNumber String?
-  designation   Designation?
-  groups        UsersOnGroup[]
+  id             String               @id @default(uuid())
+  name           String?
+  email          String               @unique
+  phone          String?
+  profileImage   String?
+  status         Status?              @default(ACTIVE)
+  roles          UserRole[]
+  dob            DateTime?
+  address        Address?
+  bankId         String?
+  bank           Bank?                @relation(fields: [bankId], references: [id], onDelete: SetNull)
+  professional   ProfessionalProfile?
+  accountNumber  String?
+  designation    Designation?
+  groups         UsersOnGroup[]
+  VehicleBooking VehicleBooking[]
 
   ledPMS    PMS[] @relation("PMSLeader")
   guidedPMS PMS[] @relation("PMSGuide")
@@ -306,11 +307,30 @@ model Booking {
   @@map("bookings")
 }
 
+model VehicleBooking {
+  id      String        @id @default(uuid())
+  date    DateTime
+  status  BookingStatus @default(PENDING)
+  comment String?
+
+  vehicleId String?
+  vehicle   Vehicle? @relation(fields: [vehicleId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  driverId String?
+  driver   User?   @relation(fields: [driverId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("vehicle_bookings")
+}
+
 model Vehicle {
-  id     String  @id @default(uuid())
-  model  String?
-  image  String?
-  number String  @unique
+  id             String           @id @default(uuid())
+  model          String?
+  image          String?
+  number         String           @unique
+  VehicleBooking VehicleBooking[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

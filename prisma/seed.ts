@@ -302,6 +302,16 @@ const admins = [
     roles: [ROLE.ADMIN],
     email: 'sherpanuru629@gmail.com',
   },
+  {
+    name: 'Accounts Boss Adventure',
+    roles: [ROLE.ADMIN],
+    email: 'bossadventureacc17@gmail.com',
+  },
+  {
+    name: 'Reservations Boss Adventure',
+    roles: [ROLE.ADMIN],
+    email: 'reservation@boss-adventure.com',
+  },
 ];
 
 const loadProductionAdmins = async () => {

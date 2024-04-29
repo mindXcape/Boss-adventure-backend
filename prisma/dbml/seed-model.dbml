@@ -37,6 +37,7 @@ Table users {
   accountNumber String
   designation Designation
   groups users_on_group [not null]
+  VehicleBooking vehicle_bookings [not null]
   ledPMS pms [not null]
   guidedPMS pms [not null]
   createdAt DateTime [default: `now()`, not null]
@@ -214,11 +215,25 @@ Table bookings {
   updatedAt DateTime [not null]
 }
 
+Table vehicle_bookings {
+  id String [pk]
+  date DateTime [not null]
+  status BookingStatus [not null, default: 'PENDING']
+  comment String
+  vehicleId String
+  vehicle vehicles
+  driverId String
+  driver users
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+}
+
 Table vehicles {
   id String [pk]
   model String
   image String
   number String [unique, not null]
+  VehicleBooking vehicle_bookings [not null]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
 }
@@ -284,3 +299,7 @@ Ref: bookings.hotelId > hotel_branches.id [delete: Set Null]
 Ref: bookings.lodgeId > lodge_branches.id [delete: Set Null]
 
 Ref: bookings.groupId > groups.groupId [delete: Set Null]
+
+Ref: vehicle_bookings.vehicleId > vehicles.id [delete: Set Null]
+
+Ref: vehicle_bookings.driverId > users.id [delete: Set Null]

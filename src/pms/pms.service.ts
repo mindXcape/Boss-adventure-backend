@@ -4,11 +4,10 @@ import { UpdatePmDto } from './dto/update-pm.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AwsService } from 'src/aws/aws.service';
 import { Logger } from '@nestjs/common';
-import { CreateBooking } from './types/booking';
+import { CreateBooking, CreateVehicleBooking } from './types/booking';
 import { QueryPackagesDto } from 'src/packages/dto/query-package.dto';
 import { paginate } from 'src/utils/paginate';
-import { UpdateBookingDto } from './dto/create-booking.dto';
-import { warn } from 'console';
+import { CreateVehicleBookingDto, UpdateBookingDto } from './dto/create-booking.dto';
 
 @Injectable()
 export class PmsService {
@@ -43,6 +42,30 @@ export class PmsService {
     if (items.image === null) return items;
     const url = await this.awsService.getSignedUrlFromS3(items.image);
     return { ...items, image: url };
+  }
+
+  async createVehicleBooking(model: any, data: CreateVehicleBooking) {
+    try {
+      this._logger.log('Creating a new vehicle booking');
+      const doesVehicleExist = await model.vehicle.findUnique({
+        where: {
+          number: data.vehicleId,
+        },
+      });
+
+      if (!doesVehicleExist) throw new NotFoundException('Vehicle does not exist');
+
+      const booking = await model.vehicleBooking.create({
+        data: {
+          ...data,
+          vehicleId: doesVehicleExist.id,
+        },
+      });
+      return booking;
+    } catch (error) {
+      this._logger.error(error.message);
+      throw new BadRequestException(error.message);
+    }
   }
 
   async createBooking(data: CreateBooking) {
@@ -81,6 +104,51 @@ export class PmsService {
       const booking = await this.prisma.booking.create({
         data,
       });
+      return booking;
+    } catch (error) {
+      this._logger.error(error.message);
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  async updateVehicleBooking(id: string, data: CreateVehicleBookingDto) {
+    try {
+      this._logger.log(`Updating vehicle booking with id ${id}`);
+      const doesBookingExist = await this.prisma.vehicleBooking.findUnique({
+        where: {
+          id,
+        },
+      });
+
+      if (!doesBookingExist) throw new NotFoundException('Vehicle booking does not exist');
+
+      const booking = await this.prisma.vehicleBooking.update({
+        where: {
+          id,
+        },
+        data,
+      });
+      return booking;
+    } catch (error) {
+      this._logger.error(error.message);
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  async findVehicleBooking(id: string) {
+    try {
+      this._logger.log(`Fetching vehicle booking with id ${id}`);
+      const booking = await this.prisma.vehicleBooking.findUnique({
+        where: {
+          id,
+        },
+        include: {
+          vehicle: true,
+          driver: true,
+        },
+      });
+
+      if (!booking) throw new NotFoundException('Vehicle booking does not exist');
       return booking;
     } catch (error) {
       this._logger.error(error.message);
@@ -316,6 +384,44 @@ export class PmsService {
             groupId,
           });
 
+          if (transfer === 'DRIVE') {
+            if (!transferDetails || !transferDetails.driverId || !transferDetails.vehicleNumber) {
+              throw new BadRequestException(
+                'DriverId and VehicleNumber is required for Drive transfer',
+              );
+            }
+            let vehicle;
+
+            if (!data.vehicleBookingId) {
+              vehicle = await this.createVehicleBooking(prisma, {
+                vehicleId: transferDetails.vehicleNumber,
+                driverId: transferDetails.driverId,
+                date,
+              });
+            } else {
+              const v = await this.findVehicleBooking(data.vehicleBookingId);
+              if (!v) throw new BadRequestException('Vehicle booking does not exist');
+
+              vehicle = await this.updateVehicleBooking(data.vehicleBookingId, {
+                vehicleId: transferDetails.vehicleNumber,
+                driverId: transferDetails.driverId,
+                comment: transferDetails.comment,
+                status: transferDetails.status,
+                date,
+              });
+            }
+
+            if (!vehicle) throw new BadRequestException('Vehicle booking failed');
+            return newActivities.activity.push({
+              bookingId: newBooking.id,
+              description,
+              name,
+              transfer,
+              transferDetails,
+              vehicleBookingId: vehicle.id,
+            });
+          }
+
           newActivities.activity.push({
             bookingId: newBooking.id,
             description,
@@ -388,6 +494,29 @@ export class PmsService {
             data;
           const booking = await this.createBooking({ date, hotelId, lodgeId, meal, groupId });
 
+          if (transfer === 'DRIVE') {
+            if (!transferDetails.driverId || !transferDetails.vehicleNumber) {
+              throw new BadRequestException(
+                'DriverId and VehicleNumber is required for Drive transfer',
+              );
+            }
+            const vehicle = await this.createVehicleBooking(prisma, {
+              vehicleId: transferDetails.vehicleNumber,
+              driverId: transferDetails.driverId,
+              date,
+            });
+            if (!vehicle) throw new BadRequestException('Vehicle booking failed');
+            newActivities.activity.push({
+              bookingId: booking.id,
+              description,
+              name,
+              transfer,
+              transferDetails,
+              vehicleBookingId: vehicle.id,
+            });
+            continue;
+          }
+
           newActivities.activity.push({
             bookingId: booking.id,
             description,
@@ -396,7 +525,7 @@ export class PmsService {
             transferDetails,
           });
         }
-        return await prisma.pMS.create({
+        const output = await prisma.pMS.create({
           data: {
             groupId,
             leaderId: createPmDto.leaderId,
@@ -433,6 +562,7 @@ export class PmsService {
             },
           },
         });
+        return output;
       });
 
       return result;
@@ -486,6 +616,44 @@ export class PmsService {
           const signedHotel = await this.getSignedUrl(booking.hotel.hotel);
           return { ...booking, hotel: { ...booking.hotel, hotel: signedHotel } };
         }
+      });
+
+      return { ...result, rows: await Promise.all(rows) };
+    } catch (error) {
+      this._logger.error(error.message);
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  async findAllVehicleBookings(query: QueryPackagesDto) {
+    try {
+      this._logger.log('Fetching all vehicle bookings');
+      const result = await paginate(
+        this.prisma.vehicleBooking,
+        {
+          where: {
+            OR: [
+              { vehicle: { number: { contains: query.search || '', mode: 'insensitive' } } },
+              { driver: { name: { contains: query.search || '', mode: 'insensitive' } } },
+            ],
+          },
+          include: {
+            vehicle: true,
+            driver: true,
+          },
+        },
+        {
+          page: query.page || 1,
+          perPage: query.perPage || 10,
+        },
+      );
+
+      const rows = result.rows.map(async (booking: any) => {
+        return {
+          ...booking,
+          vehicle: await this.getSignedUrl(booking.vehicle),
+          driver: await this.getUserSignedUrl(booking.driver),
+        };
       });
 
       return { ...result, rows: await Promise.all(rows) };

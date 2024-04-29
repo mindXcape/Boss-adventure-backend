@@ -136,4 +136,12 @@ export class PmsActivitiesDto {
     description: 'Json Details of the transfer',
   })
   transferDetails: any;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    description: 'Vehicle booking id',
+    example: '2b2cxl30-123132-123123',
+  })
+  vehicleBookingId: string;
 }
