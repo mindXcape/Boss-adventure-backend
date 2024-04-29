@@ -127,7 +127,7 @@ export class PmsController {
 
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Roles('ADMIN')
-  @ApiOperation({ summary: 'Update a Booking' })
+  @ApiOperation({ summary: 'Update a vehicle booking' })
   @ApiResponse({
     status: 200,
     description: 'The found record',

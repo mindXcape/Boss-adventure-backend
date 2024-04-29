@@ -27,6 +27,7 @@ Table users {
   email String [unique, not null]
   phone String
   profileImage String
+  gender String
   status Status [default: 'ACTIVE']
   roles user_roles [not null]
   dob DateTime
@@ -175,6 +176,8 @@ Table groups {
 Table users_on_group {
   groupId String [not null]
   userId String [not null]
+  rooms String
+  extension String
   group groups [not null]
   user users [not null]
 

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -43,11 +43,11 @@ export class GroupsService {
         throw new BadRequestException('Group Id should be unique');
       }
 
-      // getch all the users and  check if they have the one role of leader and guide
-      const userlist = await this.prismaService.user.findMany({
+      // fetch all the users and  check if they have the one role of leader and guide
+      const userList = await this.prismaService.user.findMany({
         where: {
           id: {
-            in: clients,
+            in: clients.map(client => client.clientId),
           },
         },
         include: {
@@ -56,22 +56,24 @@ export class GroupsService {
       });
 
       // Validate user IDs
-      if (userlist.length !== clients.length) {
+      if (userList.length !== clients.length) {
         throw new BadRequestException('One or more user IDs do not exist');
       }
 
-      // Group must have one leader and guide
-      const leader = userlist.filter(user => user.roles.some(role => role.roleId === 'LEADER'));
-      const guide = userlist.filter(user => user.roles.some(role => role.roleId === 'GUIDE'));
+      // // Group must have one leader and guide
+      const leader = userList.filter(user => user.roles.some(role => role.roleId === 'LEADER'));
+      const guide = userList.filter(user => user.roles.some(role => role.roleId === 'GUIDE'));
       if (leader.length !== 1 || guide.length !== 1) {
         throw new BadRequestException('Group must have one leader and guide');
       }
 
-      const users = clients.map(clientId => {
+      const users = clients.map(client => {
         return {
+          ...(client.rooms && { rooms: client.rooms }),
+          ...(client.extension && { extension: client.extension }),
           user: {
             connect: {
-              id: clientId,
+              id: client.clientId,
             },
           },
         };
@@ -86,7 +88,7 @@ export class GroupsService {
         },
         include: {
           UsersOnGroup: {
-            select: { user: true },
+            select: { user: true, rooms: true, extension: true },
           },
         },
       });
@@ -114,6 +116,8 @@ export class GroupsService {
           include: {
             UsersOnGroup: {
               select: {
+                rooms: true,
+                extension: true,
                 user: {
                   include: {
                     roles: true,
@@ -171,6 +175,8 @@ export class GroupsService {
         include: {
           UsersOnGroup: {
             select: {
+              rooms: true,
+              extension: true,
               user: {
                 include: {
                   roles: true,
@@ -183,9 +189,14 @@ export class GroupsService {
         },
       });
 
+      if (!group) throw new NotFoundException('Group does not exist');
+
       const users = group.UsersOnGroup.map(async (user: any) => {
         const u = await this.getSignedUrl(user.user);
-        return u;
+        return {
+          ...user,
+          user: u,
+        };
       });
 
       return { ...group, UsersOnGroup: await Promise.all(users) };
@@ -230,7 +241,7 @@ export class GroupsService {
       const userlist = await this.prismaService.user.findMany({
         where: {
           id: {
-            in: clients,
+            in: clients.map(client => client.clientId),
           },
         },
         include: {
@@ -250,10 +261,13 @@ export class GroupsService {
         throw new BadRequestException('Group must have one leader and guide');
       }
 
-      const connectUsers = clients.map(clientId => ({
+      const connectUsers = clients.map(client => ({
         groupId: id,
-        userId: clientId,
+        userId: client.clientId,
+        rooms: client.rooms,
+        extension: client.extension,
       }));
+
       let updatedGroup;
       if (clients && clients.length > 0) {
         updatedGroup = await this.prismaService.$transaction(async prisma => {
@@ -271,7 +285,7 @@ export class GroupsService {
             },
             include: {
               UsersOnGroup: {
-                select: { user: true },
+                select: { user: true, extension: true, rooms: true },
               },
             },
           });

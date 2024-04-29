@@ -130,6 +130,7 @@ const loadUsers = async () => {
         phone: faker.phone.number(),
         status: faker.helpers.arrayElement(['ACTIVE', 'INACTIVE', 'BLOCKED']),
         dob: faker.date.past(),
+        gender: faker.helpers.arrayElement(['Male', 'Female', 'Others']),
         accountNumber: faker.finance.accountNumber(),
         designation:
           role === 'ADMIN' ? faker.helpers.arrayElement(['DRIVER', 'ACCOUNT', 'MANAGER']) : null,

@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsArray, IsOptional, IsString, ValidateNested } from 'class-validator';
 
 export class CreateGroupDto {
   @IsString()
@@ -11,8 +12,35 @@ export class CreateGroupDto {
 
   @IsArray()
   @ApiProperty({
-    description: 'Array of user Ids',
+    description: 'Array of user',
     example: "['asfaf', 'asfasf', 'asfasf']",
   })
-  clients: string[];
+  @ValidateNested({ each: true })
+  @Type(() => UsersOnGroupDto)
+  clients: UsersOnGroupDto[];
+}
+
+export class UsersOnGroupDto {
+  @IsString()
+  @ApiProperty({
+    description: 'client Id',
+    example: '2022-B-4',
+  })
+  clientId: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    description: 'Number of rooms booked',
+    example: '1 Double',
+  })
+  rooms: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    description: 'Extension number',
+    example: 'Any comment goes here',
+  })
+  extension: string;
 }

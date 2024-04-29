@@ -18,6 +18,7 @@ export class UsersService {
       profileImage,
       email,
       panNumber,
+      gender,
       bankId,
       accountNumber,
       status,
@@ -61,6 +62,7 @@ export class UsersService {
           designation,
           accountNumber,
           bankId,
+          gender,
           address: {
             create: {
               address,
@@ -267,6 +269,7 @@ export class UsersService {
       city,
       state,
       country,
+      gender,
       zipCode,
       companyName,
       passportNumber,
@@ -317,6 +320,7 @@ export class UsersService {
           profileImage: profileImage || user.profileImage,
           bankId: bankId || user.bankId,
           accountNumber: accountNumber || user.accountNumber,
+          gender: gender || user.gender,
           address: {
             update: {
               address: address || user.address.address,

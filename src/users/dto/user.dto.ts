@@ -36,6 +36,13 @@ export class CreateBankDto {
 }
 
 export class CreateUserDto {
+  @IsString()
+  @ApiProperty({
+    description: 'Gender of the user',
+    example: 'Male | Female | Other',
+  })
+  gender: string;
+
   @IsEmail()
   @ApiProperty({
     description: 'Email of the user',

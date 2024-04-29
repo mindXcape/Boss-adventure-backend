@@ -73,6 +73,7 @@ model User {
   email          String               @unique
   phone          String?
   profileImage   String?
+  gender         String?
   status         Status?              @default(ACTIVE)
   roles          UserRole[]
   dob            DateTime?
@@ -253,10 +254,12 @@ model Group {
 }
 
 model UsersOnGroup {
-  groupId String
-  userId  String
-  group   Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  groupId   String
+  userId    String
+  rooms     String?
+  extension String?
+  group     Group   @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([groupId, userId])
   @@map("users_on_group")
