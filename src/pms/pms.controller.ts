@@ -19,7 +19,11 @@ import { QueryPackagesDto } from 'src/packages/dto/query-package.dto';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.auth.guard';
 import { RoleGuard } from 'src/auth/guards/role.guard';
-import { CreateBookingDto, UpdateBookingDto } from './dto/create-booking.dto';
+import {
+  CreateBookingDto,
+  UpdateBookingDto,
+  UpdateVehicleBookingDto,
+} from './dto/create-booking.dto';
 
 @Controller('pms')
 @ApiBearerAuth('access-token')
@@ -119,6 +123,22 @@ export class PmsController {
   findOneBooking(@Param('id') id: string) {
     if (!id) throw new BadRequestException('Booking ID is required');
     return this.pmsService.findBooking(id);
+  }
+
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles('ADMIN')
+  @ApiOperation({ summary: 'Update a Booking' })
+  @ApiResponse({
+    status: 200,
+    description: 'The found record',
+    type: CreateBookingDto,
+  })
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
+  @Patch('/vehicle-bookings/:id')
+  updateVehicleBooking(@Param('id') id: string, @Body() updateBookingDto: UpdateVehicleBookingDto) {
+    if (!id) throw new BadRequestException('Vehicle booking ID is required');
+
+    return this.pmsService.updateVehicleBooking(id, updateBookingDto);
   }
 
   @UseGuards(JwtAuthGuard, RoleGuard)

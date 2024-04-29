@@ -100,3 +100,4 @@ export class CreateBookingDto {
 }
 
 export class UpdateBookingDto extends PartialType(CreateBookingDto) {}
+export class UpdateVehicleBookingDto extends PartialType(CreateVehicleBookingDto) {}

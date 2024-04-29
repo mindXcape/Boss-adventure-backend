@@ -7,7 +7,7 @@ import { Logger } from '@nestjs/common';
 import { CreateBooking, CreateVehicleBooking } from './types/booking';
 import { QueryPackagesDto } from 'src/packages/dto/query-package.dto';
 import { paginate } from 'src/utils/paginate';
-import { CreateVehicleBookingDto, UpdateBookingDto } from './dto/create-booking.dto';
+import { UpdateBookingDto, UpdateVehicleBookingDto } from './dto/create-booking.dto';
 
 @Injectable()
 export class PmsService {
@@ -111,7 +111,7 @@ export class PmsService {
     }
   }
 
-  async updateVehicleBooking(id: string, data: CreateVehicleBookingDto) {
+  async updateVehicleBooking(id: string, data: UpdateVehicleBookingDto) {
     try {
       this._logger.log(`Updating vehicle booking with id ${id}`);
       const doesBookingExist = await this.prisma.vehicleBooking.findUnique({
