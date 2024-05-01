@@ -165,33 +165,42 @@ const loadUsers = async () => {
 
   console.log('100 Users seed data loaded');
 };
-
-const loadFranchises = async () => {
+const loadProductionFranchises = async () => {
   const franchises = [
-    'Mount Everest',
-    'Kalapatthar',
-    'Annapurna Base Camp',
-    'Langtang',
-    'Manaslu',
-    'Gosaikunda',
-    'Mardi Himal',
-    'Upper Mustang',
-    'Rara Lake',
-    'Dolpo',
-    'Kanchenjunga',
-    'Rolwaling',
-    'Ganesh Himal',
-    'Dhaulagiri',
+    {
+      name: 'Aktivferien',
+      image: '43226ce26979c07402bfac9ffd4994eb7fea04ec0470e08685ec66fec140d6db1714539530968.jpg',
+    },
+    {
+      name: 'Bergtrolle',
+      image: null,
+    },
+    {
+      name: 'Gipfeltraume',
+      image: '77c6b0127e04b3c816f42c48704c8a2bb741c1bab4997de29cc874b81de370fd1714539565576.jpg',
+    },
+    {
+      name: 'Dr olaf',
+      image: '76da95e3871c441d79b70eaa3adbc3b24295a2516f50be9d02ef347c728f86001714539597364.jpg',
+    },
+    {
+      name: 'Abanico',
+      image: 'eafa29b23db0930d68d8decf2fc68adf61d00604aceadf6ff8effe1afee9b9001714539627478.jpg',
+    },
+    {
+      name: 'Diamir',
+      image: 'd06cea29b72b9fb2a668591c504a3a492f13ac3e1b795bd1c2b3a555a1f3c81d1714539650664.jpg',
+    },
   ];
-
-  franchises.forEach(async franchise => {
+  for await (const franchise of franchises) {
     await prisma.franchise.create({
       data: {
-        name: franchise,
-        image: faker.helpers.arrayElement(images),
+        name: franchise.name,
+        image: franchise.image,
       },
     });
-  });
+  }
+  console.log('Franchise seed data loaded');
 };
 
 const loadHotels = async () => {
@@ -334,6 +343,7 @@ const loadProductionSeed = async () => {
     console.log('Loading production seed data');
     await loadBanks();
     await loadProductionAdmins();
+    await loadProductionFranchises();
     console.log('Production seed data loaded successfully');
   } catch (error) {
     console.log(error);
@@ -347,9 +357,9 @@ async function main() {
     await loadAdmin();
     await loadBanks();
     await loadUsers();
-    await loadFranchises();
     await loadHotels();
     await loadLodge();
+    await loadProductionFranchises();
   }
 }
 
