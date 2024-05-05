@@ -44,6 +44,7 @@ export class CreateUserDto {
   gender: string;
 
   @IsEmail()
+  @IsOptional()
   @ApiProperty({
     description: 'Email of the user',
     example: 'john@doe.com',
@@ -59,6 +60,7 @@ export class CreateUserDto {
   name: string;
 
   @IsString()
+  @IsOptional()
   @IsOptional()
   @ApiProperty({
     description: 'Contact number of user',

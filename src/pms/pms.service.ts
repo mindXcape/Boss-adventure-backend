@@ -392,7 +392,7 @@ export class PmsService {
               );
             }
 
-            const vehicleExist = await prisma.vehicle.findUnique({
+            const vehicleExist = await prisma.vehicle.findFirst({
               where: {
                 number: transferDetails.vehicleNumber,
               },
@@ -844,7 +844,7 @@ export class PmsService {
                 },
               },
             });
-            const vehicle = await this.prisma.vehicle.findUnique({
+            const vehicle = await this.prisma.vehicle.findFirst({
               where: {
                 number: vehicleNumber,
               },

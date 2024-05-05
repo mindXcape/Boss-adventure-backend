@@ -70,7 +70,7 @@ model Admin {
 model User {
   id             String               @id @default(uuid())
   name           String?
-  email          String               @unique
+  email          String?
   phone          String?
   profileImage   String?
   gender         String?
@@ -332,7 +332,7 @@ model Vehicle {
   id             String           @id @default(uuid())
   model          String?
   image          String?
-  number         String           @unique
+  number         String?
   VehicleBooking VehicleBooking[]
 
   createdAt DateTime @default(now())

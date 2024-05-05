@@ -16,13 +16,11 @@ export class UsersService {
     const {
       name,
       profileImage,
-      email,
       panNumber,
       gender,
       bankId,
       accountNumber,
       status,
-      phone,
       dob,
       address,
       citizenNumber,
@@ -37,26 +35,27 @@ export class UsersService {
       passportExpire,
       guide_license,
       nma,
+      ...rest
     } = createUserDto;
     try {
       this._logger.log(`Registering new user: ${createUserDto?.email}`);
 
-      const isUnique = await this.prisma.user.findFirst({
-        where: {
-          email,
-        },
-      });
+      if (createUserDto?.email) {
+        const isUnique = await this.prisma.user.findFirst({
+          where: {
+            email: createUserDto?.email,
+          },
+        });
 
-      if (isUnique) {
-        throw new BadRequestException('Email should be unique');
+        if (isUnique) {
+          throw new BadRequestException('Email should be unique');
+        }
       }
 
       const user = await this.prisma.user.create({
         data: {
           name,
           profileImage,
-          email,
-          phone,
           status,
           dob,
           designation,
@@ -88,6 +87,7 @@ export class UsersService {
               nma,
             },
           },
+          ...rest,
         },
         include: {
           address: true,
@@ -447,7 +447,7 @@ export class UsersService {
   async findOneByEmail(email: string): Promise<any> {
     this._logger.log(`Fetching user by email: ${email} `);
     try {
-      const user = await this.prisma.user.findUnique({
+      const user = await this.prisma.user.findFirst({
         where: { email },
         include: {
           address: true,

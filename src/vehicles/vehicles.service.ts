@@ -29,19 +29,22 @@ export class VehiclesService {
   async create(createVehicleDto: CreateVehicleDto) {
     try {
       this._logger.log(`Creating a new vehicle with model ${createVehicleDto.model}`);
-      const doesExit = await this.prisma.vehicle.findFirst({
-        where: {
-          number: createVehicleDto.number,
-        },
-      });
-      if (doesExit) {
-        throw new Error('Vehicle already exists. Vehicle number should be unique.');
+      if (createVehicleDto.number) {
+        const doesExit = await this.prisma.vehicle.findFirst({
+          where: {
+            number: createVehicleDto.number,
+          },
+        });
+
+        if (doesExit) {
+          throw new Error('Vehicle already exists. Vehicle number should be unique.');
+        }
       }
       const vehicle = await this.prisma.vehicle.create({
         data: {
           model: createVehicleDto.model,
           image: createVehicleDto.image,
-          number: createVehicleDto.number,
+          ...(createVehicleDto.number && { number: createVehicleDto.number }),
         },
       });
       const signedVehicle = await this.getSignedUrl(vehicle);
