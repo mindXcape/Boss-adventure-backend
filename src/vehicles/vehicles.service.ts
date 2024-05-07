@@ -120,7 +120,7 @@ export class VehiclesService {
         data: {
           model: updateVehicleDto.model || vehicle.model,
           image: updateVehicleDto.image || vehicle.image,
-          number: updateVehicleDto.number || vehicle.number,
+          number: updateVehicleDto.number === undefined ? vehicle.number : updateVehicleDto.number,
         },
       });
       const signedVehicle = await this.getSignedUrl(updatedVehicle);
