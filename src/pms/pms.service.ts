@@ -49,16 +49,30 @@ export class PmsService {
       this._logger.log('Creating a new vehicle booking');
       const doesVehicleExist = await model.vehicle.findUnique({
         where: {
-          number: data.vehicleId,
+          id: data.vehicleId,
         },
       });
 
       if (!doesVehicleExist) throw new NotFoundException('Vehicle does not exist');
 
+      const doesDriverExist = await model.user.findUnique({
+        where: {
+          id: data.driverId,
+          roles: {
+            some: {
+              roleId: 'ADMIN',
+            },
+          },
+          designation: 'DRIVER',
+        },
+      });
+
+      if (!doesDriverExist) throw new NotFoundException('Driver does not exist');
+
       const booking = await model.vehicleBooking.create({
         data: {
           ...data,
-          vehicleId: doesVehicleExist.id,
+          vehicleId: data.vehicleId,
         },
       });
       return booking;
@@ -386,15 +400,15 @@ export class PmsService {
 
           if (transfer === 'DRIVE') {
             this._logger.log('Drive transfer');
-            if (!transferDetails || !transferDetails.driverId || !transferDetails.vehicleNumber) {
+            if (!transferDetails || !transferDetails.driverId || !transferDetails.vehicleId) {
               throw new BadRequestException(
-                'DriverId and VehicleNumber is required for Drive transfer',
+                'DriverId and VehicleId is required for Drive transfer',
               );
             }
 
             const vehicleExist = await prisma.vehicle.findFirst({
               where: {
-                number: transferDetails.vehicleNumber,
+                id: transferDetails.vehicleId,
               },
             });
             if (!vehicleExist) throw new BadRequestException('Vehicle does not exist');
@@ -418,7 +432,7 @@ export class PmsService {
 
               vehicle = await prisma.vehicleBooking.create({
                 data: {
-                  vehicleId: vehicleExist.id,
+                  vehicleId: transferDetails.vehicleId,
                   driverId: transferDetails.driverId,
                   date,
                 },
@@ -428,7 +442,7 @@ export class PmsService {
               if (!v) throw new BadRequestException('Vehicle booking does not exist');
               this._logger.log('Booking found, updating vehicle booking');
               vehicle = await this.updateVehicleBooking(data.vehicleBookingId, {
-                vehicleId: transferDetails.vehicleNumber,
+                vehicleId: transferDetails.vehicleId,
                 driverId: transferDetails.driverId,
                 comment: transferDetails.comment,
                 status: transferDetails.status,
@@ -540,13 +554,13 @@ export class PmsService {
           const booking = await this.createBooking({ date, hotelId, lodgeId, meal, groupId });
 
           if (transfer === 'DRIVE') {
-            if (!transferDetails.driverId || !transferDetails.vehicleNumber) {
+            if (!transferDetails.driverId || !transferDetails.vehicleId) {
               throw new BadRequestException(
                 'DriverId and VehicleNumber is required for Drive transfer',
               );
             }
             const vehicle = await this.createVehicleBooking(prisma, {
-              vehicleId: transferDetails.vehicleNumber,
+              vehicleId: transferDetails.vehicleId,
               driverId: transferDetails.driverId,
               date,
             });
@@ -685,6 +699,9 @@ export class PmsService {
           include: {
             vehicle: true,
             driver: true,
+          },
+          orderBy: {
+            createdAt: 'desc',
           },
         },
         {
