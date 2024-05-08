@@ -835,7 +835,7 @@ export class PmsService {
         if (activity.transfer && activity.transferDetails) {
           // check if transfer is drive and if drive get vehicle objet and driver object from transferDetails
           if (activity.transfer === 'DRIVE') {
-            const { driverId, vehicleNumber } = activity.transferDetails;
+            const { driverId, vehicleId } = activity.transferDetails;
             const driver = await this.prisma.user.findUnique({
               where: {
                 id: driverId,
@@ -861,9 +861,9 @@ export class PmsService {
                 },
               },
             });
-            const vehicle = await this.prisma.vehicle.findFirst({
+            const vehicle = await this.prisma.vehicle.findUnique({
               where: {
-                number: vehicleNumber,
+                id: vehicleId,
               },
             });
             return {
