@@ -163,7 +163,11 @@ export class PmsService {
       });
 
       if (!booking) throw new NotFoundException('Vehicle booking does not exist');
-      return booking;
+      return {
+        ...booking,
+        vehicle: await this.getSignedUrl(booking.vehicle),
+        driver: await this.getUserSignedUrl(booking.driver),
+      };
     } catch (error) {
       this._logger.error(error.message);
       throw new BadRequestException(error.message);
@@ -255,7 +259,7 @@ export class PmsService {
           ...(hotelId && { hotelId: payload.hotelId }),
         },
       });
-      if (!booking) throw new NotFoundException('Booking does not exist');
+      // if (!booking) throw new NotFoundException('Booking does not exist');
       return booking;
     } catch (error) {
       this._logger.error(error.message);
@@ -383,20 +387,25 @@ export class PmsService {
         for (const data of activities) {
           const { date, description, hotelId, lodgeId, meal, name, transfer, transferDetails } =
             data;
-          const booking = await this.findBookingByGroup({ hotelId, lodgeId, groupId });
-          if (!booking) throw new BadRequestException('Booking does not exist');
 
           if (!hotelId && !lodgeId) {
             throw new NotFoundException('HotelId or LodgeId is required');
           }
-
-          const newBooking = await this.updateBooking(booking.id, {
-            date,
-            hotelId,
-            lodgeId,
-            meal,
-            groupId,
-          });
+          // Hotels and lodge bookings
+          const booking = await this.findBookingByGroup({ hotelId, lodgeId, groupId });
+          let newBooking;
+          if (booking) {
+            newBooking = await this.updateBooking(booking.id, {
+              date,
+              hotelId,
+              lodgeId,
+              meal,
+              groupId,
+            });
+          } else {
+            this._logger.log('No booking found, creating a new booking for hotel or lodge');
+            newBooking = await this.createBooking({ date, hotelId, lodgeId, meal, groupId });
+          }
 
           if (transfer === 'DRIVE') {
             this._logger.log('Drive transfer');
@@ -709,14 +718,19 @@ export class PmsService {
           perPage: query.perPage || 10,
         },
       );
+      if (result.rows.length < 1) {
+        return result;
+      }
 
-      const rows = result.rows.map(async (booking: any) => {
-        return {
-          ...booking,
-          vehicle: await this.getSignedUrl(booking.vehicle),
-          driver: await this.getUserSignedUrl(booking.driver),
-        };
-      });
+      const rows = result.rows
+        .filter((booking: any) => booking.vehicle && booking.driver)
+        .map(async (booking: any) => {
+          return {
+            ...booking,
+            vehicle: await this.getSignedUrl(booking.vehicle),
+            driver: await this.getUserSignedUrl(booking.driver),
+          };
+        });
 
       return { ...result, rows: await Promise.all(rows) };
     } catch (error) {
