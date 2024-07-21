@@ -464,6 +464,7 @@ export class PmsService {
               bookingId: newBooking.id,
               description,
               name,
+              date,
               transfer,
               transferDetails,
               vehicleBookingId: vehicle.id,
@@ -495,6 +496,7 @@ export class PmsService {
             description,
             name,
             transfer,
+            date,
             transferDetails,
           });
         }
@@ -579,6 +581,7 @@ export class PmsService {
               description,
               name,
               transfer,
+              date,
               transferDetails,
               vehicleBookingId: vehicle.id,
             });
@@ -589,6 +592,7 @@ export class PmsService {
             bookingId: booking.id,
             description,
             name,
+            date,
             transfer,
             transferDetails,
           });
