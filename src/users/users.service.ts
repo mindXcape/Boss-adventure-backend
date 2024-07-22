@@ -21,19 +21,19 @@ export class UsersService {
       bankId,
       accountNumber,
       status,
+      language,
+      category,
       dob,
       address,
       citizenNumber,
-      city,
       designation,
-      state,
-      country,
-      zipCode,
       role,
       companyName,
       passportNumber,
       passportExpire,
-      guide_license,
+      guideLicense,
+      guideLicenseExpire,
+      asset,
       nma,
       ...rest
     } = createUserDto;
@@ -52,6 +52,18 @@ export class UsersService {
         }
       }
 
+      if (bankId) {
+        const isValid = await this.prisma.bank.findFirst({
+          where: {
+            id: bankId,
+          },
+        });
+
+        if (!isValid) {
+          throw new BadRequestException('Invalid bankId provided');
+        }
+      }
+
       const user = await this.prisma.user.create({
         data: {
           name,
@@ -60,20 +72,25 @@ export class UsersService {
           dob,
           designation,
           accountNumber,
+          language,
+          category,
           bankId,
           gender,
-          address: {
-            create: {
-              address,
-              city,
-              state,
-              country,
-              zipCode,
-            },
-          },
+          address,
           roles: {
             create: {
               roleId: role,
+            },
+          },
+          asset: {
+            create: {
+              citizenshipImg: asset?.citizenshipImg,
+              guideLicenseImg: asset?.guideLicenseImg,
+              panCardImg: asset?.panCardImg,
+              cvImg: asset?.cvImg,
+              namBookImg: asset?.namBookImg,
+              nationIdImg: asset?.nationIdImg,
+              passportImg: asset?.passportImg,
             },
           },
           professional: {
@@ -83,15 +100,16 @@ export class UsersService {
               passportNumber,
               passportExpire,
               citizenNumber,
-              guide_license,
+              guide_license: guideLicense,
+              guide_license_Expire: guideLicenseExpire,
               nma,
             },
           },
           ...rest,
         },
         include: {
-          address: true,
           professional: true,
+          asset: true,
           roles: true,
           bank: true,
         },
@@ -121,8 +139,8 @@ export class UsersService {
           },
         },
         include: {
-          address: true,
           professional: true,
+          asset: true,
           roles: true,
           bank: {
             select: {
@@ -188,7 +206,7 @@ export class UsersService {
             ],
           },
           include: {
-            address: true,
+            asset: true,
             professional: true,
             roles: true,
             bank: {
@@ -229,8 +247,8 @@ export class UsersService {
       const user = await this.prisma.user.findUnique({
         where: { id },
         include: {
-          address: true,
           professional: true,
+          asset: true,
           roles: true,
           bank: {
             select: {
@@ -261,22 +279,21 @@ export class UsersService {
       email,
       status,
       phone,
+      language,
+      asset,
       dob,
       address,
       citizenNumber,
       profileImage,
       designation,
-      city,
-      state,
-      country,
       gender,
-      zipCode,
       companyName,
       passportNumber,
       accountNumber,
       bankId,
       passportExpire,
-      guide_license,
+      guideLicense,
+      guideLicenseExpire,
       panNumber,
       nma,
       role,
@@ -286,7 +303,7 @@ export class UsersService {
       const user = await this.prisma.user.findFirst({
         where: { id },
         include: {
-          address: true,
+          asset: true,
           professional: true,
           roles: true,
         },
@@ -305,8 +322,8 @@ export class UsersService {
       const updatedUser = await this.prisma.user.update({
         where: { id },
         include: {
-          address: true,
           professional: true,
+          asset: true,
           bank: true,
           roles: true,
         },
@@ -321,15 +338,7 @@ export class UsersService {
           bankId: bankId || user.bankId,
           accountNumber: accountNumber || user.accountNumber,
           gender: gender || user.gender,
-          address: {
-            update: {
-              address: address || user.address.address,
-              city: city || user.address.city,
-              state: state || user.address.state,
-              country: country || user.address.country,
-              zipCode: zipCode || user.address.zipCode,
-            },
-          },
+          address: address || user.address,
           roles: {
             deleteMany: { userId: id },
             createMany: {
@@ -338,13 +347,25 @@ export class UsersService {
               },
             },
           },
+          asset: {
+            update: {
+              citizenshipImg: asset?.citizenshipImg || user.asset.citizenshipImg,
+              guideLicenseImg: asset?.guideLicenseImg || user.asset.guideLicenseImg,
+              panCardImg: asset?.panCardImg || user.asset.panCardImg,
+              cvImg: asset?.cvImg || user.asset.cvImg,
+              namBookImg: asset?.namBookImg || user.asset.namBookImg,
+              nationIdImg: asset?.nationIdImg || user.asset.nationIdImg,
+              passportImg: asset?.passportImg || user.asset.passportImg,
+            },
+          },
           professional: {
             update: {
               companyName: companyName || user.professional.companyName,
               passportNumber: passportNumber || user.professional.passportNumber,
               passportExpire: passportExpire || user.professional.passportExpire,
               citizenNumber: citizenNumber || user.professional.citizenNumber,
-              guide_license: guide_license || user.professional.guide_license,
+              guide_license: guideLicense || user.professional.guide_license,
+              guide_license_Expire: guideLicenseExpire || user.professional.guide_license_Expire,
               nma: nma || user.professional.nma,
               panNumber: panNumber || user.professional.panNumber,
             },
@@ -450,7 +471,7 @@ export class UsersService {
       const user = await this.prisma.user.findFirst({
         where: { email },
         include: {
-          address: true,
+          asset: true,
           professional: true,
           roles: true,
           bank: true,

@@ -831,7 +831,6 @@ export class PmsService {
                     include: {
                       professional: true,
                       roles: true,
-                      address: true,
                     },
                   },
                 },
@@ -867,7 +866,6 @@ export class PmsService {
                 designation: 'DRIVER',
               },
               include: {
-                address: true,
                 professional: true,
                 roles: true,
                 bank: {

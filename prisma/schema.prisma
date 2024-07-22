@@ -67,22 +67,27 @@ model Admin {
   @@map("admins")
 }
 
+// TODO: Add new fields in user DTO
 model User {
-  id             String               @id @default(uuid())
-  name           String?
-  email          String?
-  phone          String?
-  profileImage   String?
-  gender         String?
-  status         Status?              @default(ACTIVE)
-  roles          UserRole[]
-  dob            DateTime?
-  address        Address?
-  bankId         String?
-  bank           Bank?                @relation(fields: [bankId], references: [id], onDelete: SetNull)
-  professional   ProfessionalProfile?
-  accountNumber  String?
-  designation    Designation?
+  id            String               @id @default(uuid())
+  name          String?
+  email         String?
+  phone         String?
+  profileImage  String?
+  gender        String?
+  status        Status?              @default(ACTIVE)
+  roles         UserRole[]
+  dob           DateTime?
+  address       String?
+  category      String?
+  language      String?
+  bankId        String?
+  bank          Bank?                @relation(fields: [bankId], references: [id], onDelete: SetNull)
+  professional  ProfessionalProfile?
+  accountNumber String?
+  designation   Designation?
+  asset         assets?
+
   groups         UsersOnGroup[]
   VehicleBooking VehicleBooking[]
 
@@ -93,6 +98,21 @@ model User {
   updatedAt DateTime @updatedAt
 
   @@map("users")
+}
+
+model assets {
+  id              Int     @id @default(autoincrement())
+  userId          String  @unique
+  user            User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  citizenshipImg  String?
+  panCardImg      String?
+  nationIdImg     String?
+  namBookImg      String?
+  guideLicenseImg String?
+  passportImg     String?
+  cvImg           String?
+
+  @@map("assets")
 }
 
 model Bank {
@@ -115,30 +135,19 @@ model UserRole {
   @@map("user_roles")
 }
 
-model Address {
-  id      String  @id @default(uuid())
-  userId  String  @unique
-  country String?
-  state   String?
-  city    String?
-  address String?
-  zipCode String?
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("addresses")
-}
-
 model ProfessionalProfile {
-  id             String    @id @default(uuid())
-  userId         String    @unique
-  companyName    String?
-  passportNumber String?
-  passportExpire DateTime?
-  citizenNumber  String?
-  panNumber      String?
-  guide_license  String?
-  nma            DateTime?
-  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                   String    @id @default(uuid())
+  userId               String    @unique
+  companyName          String?
+  passportNumber       String?
+  passportExpire       DateTime?
+  citizenNumber        String?
+  nationIdNumber       String?
+  panNumber            String?
+  guide_license        String?
+  guide_license_Expire DateTime?
+  nma                  DateTime?
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("professional_profiles")
 }
@@ -244,6 +253,7 @@ model Group {
   id           String         @id @default(uuid())
   groupId      String         @unique
   PMS          PMS[]
+  groupImg     String? // # TODO: Add this field in dto and check if any services breaks
   UsersOnGroup UsersOnGroup[]
 
   createdAt DateTime  @default(now())
