@@ -19,4 +19,17 @@ export class FilesService {
 
     res.send({ data: { signedUrl, fileName }, statusCode: 200 });
   }
+
+  // upload file to particular directory
+  async uploadFileToFolder(req: any, folder: string, res: FastifyReply<any>): Promise<any> {
+    const data = await req['incomingFile'];
+    const fileName = `${folder}/${data.filename ?? randomImageName()}`;
+    data.filename = fileName;
+
+    await this.awsService.uploadFiletoS3(data.file, fileName);
+
+    const signedUrl = await this.awsService.getSignedUrlFromS3(fileName);
+
+    res.send({ data: { signedUrl, fileName }, statusCode: 200 });
+  }
 }

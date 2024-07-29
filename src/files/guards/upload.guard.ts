@@ -16,11 +16,6 @@ export class UploadGuard implements CanActivate {
       throw new BadRequestException('File size exceeds the limit.');
     }
 
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif']; // Add more types if needed
-    if (!allowedTypes.includes(file.mimetype)) {
-      throw new BadRequestException('File must be an image in JPEG, PNG, or GIF format.');
-    }
-
     req['incomingFile'] = file;
     req['fileSize'] = file['size'];
     return true;

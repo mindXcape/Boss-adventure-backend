@@ -120,7 +120,7 @@ export class PmsActivitiesDto {
     example: `
       "transferDetails": {
         "transferType": "DRIVE",
-        "vehicleNumber": "KHA-2-053",
+        "vehicleId": "sfs-asfsa-5sa",
         "driverId": "sfs-asfsa-5saf-afsaf",
         "from": "Airport",
         "to": "Hotel",

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
 export class CreateVehicleDto {
   @IsString()
@@ -13,6 +13,7 @@ export class CreateVehicleDto {
   image: string;
 
   @IsString()
+  @IsOptional()
   @ApiProperty({ example: 'BA-KHA-245' })
   number: string;
 }

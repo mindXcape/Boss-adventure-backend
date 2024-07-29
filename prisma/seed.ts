@@ -20,12 +20,12 @@ export const users = [
   {
     name: 'Dipesh Kumar Sah',
     roles: [ROLE.ADMIN],
-    email: 'dipesh@mailinator.com',
+    email: 'dipesh@mailinator@gmail.com',
   },
   {
     name: 'Subhashish Jung Shah',
     roles: [ROLE.ADMIN],
-    email: 'subhashish@mailinator.com',
+    email: 'subhashish.mindxcape@gmail.com',
   },
   {
     name: 'bus-adventures',
@@ -51,6 +51,21 @@ export const users = [
     name: 'Staff bus-adventures',
     roles: [ROLE.USER],
     email: 'staff-bus-adventures@mailinator.com',
+  },
+  {
+    name: 'Ang Nuru Sherpa',
+    roles: [ROLE.ADMIN],
+    email: 'sherpanuru629@gmail.com',
+  },
+  {
+    name: 'Accounts Boss Adventure',
+    roles: [ROLE.ADMIN],
+    email: 'bossadventureacc17@gmail.com',
+  },
+  {
+    name: 'Reservations Boss Adventure',
+    roles: [ROLE.ADMIN],
+    email: 'reservation@boss-adventure.com',
   },
 ];
 
@@ -135,15 +150,7 @@ const loadUsers = async () => {
         designation:
           role === 'ADMIN' ? faker.helpers.arrayElement(['DRIVER', 'ACCOUNT', 'MANAGER']) : null,
         bankId: banks[Math.floor(Math.random() * totalBanks)].id,
-        address: {
-          create: {
-            address: faker.location.streetAddress(),
-            city: faker.location.city(),
-            state: faker.location.state(),
-            country: faker.location.country(),
-            zipCode: faker.location.zipCode(),
-          },
-        },
+        address: faker.location.streetAddress(),
         roles: {
           create: {
             roleId: role,
@@ -151,7 +158,6 @@ const loadUsers = async () => {
         },
         professional: {
           create: {
-            companyName: faker.company.name(),
             passportNumber: faker.string.alphanumeric({ length: { min: 5, max: 10 } }),
             passportExpire: faker.date.future(),
             citizenNumber: faker.string.alphanumeric({ length: { min: 5, max: 10 } }),
