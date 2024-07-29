@@ -28,11 +28,11 @@ export class UsersService {
       citizenNumber,
       designation,
       role,
-      companyName,
       passportNumber,
       passportExpire,
       guideLicense,
       guideLicenseExpire,
+      nationalIdNumber,
       asset,
       nma,
       ...rest
@@ -74,7 +74,7 @@ export class UsersService {
           accountNumber,
           language,
           category,
-          bankId,
+          ...(bankId && { bankId }),
           gender,
           address,
           roles: {
@@ -95,11 +95,11 @@ export class UsersService {
           },
           professional: {
             create: {
-              companyName,
               panNumber,
               passportNumber,
               passportExpire,
               citizenNumber,
+              nationalIdNumber,
               guide_license: guideLicense,
               guide_license_Expire: guideLicenseExpire,
               nma,
@@ -206,7 +206,17 @@ export class UsersService {
             ],
           },
           include: {
-            asset: true,
+            asset: {
+              select: {
+                citizenshipImg: true,
+                guideLicenseImg: true,
+                panCardImg: true,
+                cvImg: true,
+                namBookImg: true,
+                nationIdImg: true,
+                passportImg: true,
+              },
+            },
             professional: true,
             roles: true,
             bank: {
@@ -222,6 +232,37 @@ export class UsersService {
       );
 
       const signedUsers = users.rows.map(async (user: any) => {
+        const { asset } = user;
+
+        if (asset) {
+          const newAsset = {};
+          const signedAssets = await Promise.all(
+            Object.keys(asset).map(async key => {
+              if (asset[key]) {
+                return {
+                  [key]: await this.awsService.getSignedUrlFromS3(asset[key]),
+                };
+              }
+              return {
+                [key]: null,
+              };
+            }),
+          );
+
+          signedAssets.forEach((asset: any) => {
+            for (const [key, value] of Object.entries(asset)) {
+              newAsset[key] = value;
+            }
+          });
+
+          return {
+            ...user,
+            asset: newAsset,
+            profileImage: user?.profileImage
+              ? await this.awsService.getSignedUrlFromS3(user.profileImage)
+              : null,
+          };
+        }
         return {
           ...user,
           profileImage: user?.profileImage
@@ -287,14 +328,15 @@ export class UsersService {
       profileImage,
       designation,
       gender,
-      companyName,
       passportNumber,
       accountNumber,
       bankId,
       passportExpire,
+      nationalIdNumber,
       guideLicense,
       guideLicenseExpire,
       panNumber,
+      remark,
       nma,
       role,
     } = updateUserDto;
@@ -329,6 +371,7 @@ export class UsersService {
         },
         data: {
           name: name || user.name,
+          remark: remark || user.remark,
           designation: designation || user.designation,
           email: email || user.email,
           phone: phone || user.phone,
@@ -338,6 +381,7 @@ export class UsersService {
           bankId: bankId || user.bankId,
           accountNumber: accountNumber || user.accountNumber,
           gender: gender || user.gender,
+          language: language || user.language,
           address: address || user.address,
           roles: {
             deleteMany: { userId: id },
@@ -360,11 +404,11 @@ export class UsersService {
           },
           professional: {
             update: {
-              companyName: companyName || user.professional.companyName,
               passportNumber: passportNumber || user.professional.passportNumber,
               passportExpire: passportExpire || user.professional.passportExpire,
               citizenNumber: citizenNumber || user.professional.citizenNumber,
               guide_license: guideLicense || user.professional.guide_license,
+              nationalIdNumber: user.professional.nationalIdNumber || nationalIdNumber,
               guide_license_Expire: guideLicenseExpire || user.professional.guide_license_Expire,
               nma: nma || user.professional.nma,
               panNumber: panNumber || user.professional.panNumber,

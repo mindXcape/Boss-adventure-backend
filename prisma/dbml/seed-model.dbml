@@ -36,6 +36,7 @@ Table users {
   language String
   bankId String
   bank banks
+  remark String
   professional professional_profiles
   accountNumber String
   designation Designation
@@ -83,11 +84,10 @@ Table user_roles {
 Table professional_profiles {
   id String [pk]
   userId String [unique, not null]
-  companyName String
   passportNumber String
   passportExpire DateTime
   citizenNumber String
-  nationIdNumber String
+  nationalIdNumber String
   panNumber String
   guide_license String
   guide_license_Expire DateTime

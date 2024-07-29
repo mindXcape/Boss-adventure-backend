@@ -212,15 +212,6 @@ export class CreateUserDto {
   })
   accountNumber: string;
 
-  // Professional Information
-  @IsString()
-  @IsOptional()
-  @ApiProperty({
-    description: 'Company name of the user',
-    example: 'ABC Pvt. Ltd.',
-  })
-  companyName: string;
-
   @IsString()
   @IsOptional()
   @ApiProperty({
@@ -252,6 +243,14 @@ export class CreateUserDto {
     example: 'CA22555',
   })
   citizenNumber: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    description: 'Remark while creating user',
+    example: 'Owner of the company',
+  })
+  remark: string;
 
   @IsString()
   @IsOptional()

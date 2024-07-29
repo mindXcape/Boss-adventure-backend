@@ -143,7 +143,6 @@ const loadUsers = async () => {
         },
         professional: {
           create: {
-            companyName: faker.company.name(),
             passportNumber: faker.string.alphanumeric({ length: { min: 5, max: 10 } }),
             passportExpire: faker.date.future(),
             citizenNumber: faker.string.alphanumeric({ length: { min: 5, max: 10 } }),

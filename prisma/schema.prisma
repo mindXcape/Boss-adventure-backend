@@ -83,6 +83,7 @@ model User {
   language      String?
   bankId        String?
   bank          Bank?                @relation(fields: [bankId], references: [id], onDelete: SetNull)
+  remark        String?
   professional  ProfessionalProfile?
   accountNumber String?
   designation   Designation?
@@ -138,11 +139,10 @@ model UserRole {
 model ProfessionalProfile {
   id                   String    @id @default(uuid())
   userId               String    @unique
-  companyName          String?
   passportNumber       String?
   passportExpire       DateTime?
   citizenNumber        String?
-  nationIdNumber       String?
+  nationalIdNumber       String?
   panNumber            String?
   guide_license        String?
   guide_license_Expire DateTime?
