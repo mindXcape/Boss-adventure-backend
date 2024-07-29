@@ -12,9 +12,12 @@ export class AwsService {
     try {
       const uploadToS3 = new Upload({
         client: new S3({
+          endpoint: process.env.DO_ENDPOINT,
           credentials: {
-            accessKeyId: process.env.S3_ACCESS_KEY_ID,
-            secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+            // accessKeyId: process.env.S3_ACCESS_KEY_ID,
+            // secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+            accessKeyId: process.env.DO_ACCESS_TOKEN,
+            secretAccessKey: process.env.DO_SECRET_ACCESS_TOKEN,
           },
           region: 'ap-south-1',
         }),
@@ -39,9 +42,12 @@ export class AwsService {
 
   async getSignedUrlFromS3(filename: string, time?: number) {
     const s3 = new S3({
+      endpoint: process.env.DO_ENDPOINT,
       credentials: {
-        accessKeyId: process.env.S3_ACCESS_KEY_ID,
-        secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+        // accessKeyId: process.env.S3_ACCESS_KEY_ID,
+        // secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+        accessKeyId: process.env.DO_ACCESS_TOKEN,
+        secretAccessKey: process.env.DO_SECRET_ACCESS_TOKEN,
       },
       region: process.env.S3_BUCKET_REGION,
     });
@@ -59,9 +65,12 @@ export class AwsService {
 
   async deleteFileFromS3(filename: string) {
     const s3 = new S3({
+      endpoint: process.env.DO_ENDPOINT,
       credentials: {
-        accessKeyId: process.env.S3_ACCESS_KEY_ID,
-        secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+        // accessKeyId: process.env.S3_ACCESS_KEY_ID,
+        // secretAccessKey: process.env.S2_SECRET_ACCESS_KEY,
+        accessKeyId: process.env.DO_ACCESS_TOKEN,
+        secretAccessKey: process.env.DO_SECRET_ACCESS_TOKEN,
       },
       region: process.env.S3_BUCKET_REGION,
     });
