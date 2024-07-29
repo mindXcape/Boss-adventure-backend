@@ -20,12 +20,12 @@ export const users = [
   {
     name: 'Dipesh Kumar Sah',
     roles: [ROLE.ADMIN],
-    email: 'dipesh@mailinator.com',
+    email: 'dipesh@mailinator@gmail.com',
   },
   {
     name: 'Subhashish Jung Shah',
     roles: [ROLE.ADMIN],
-    email: 'subhashish@mailinator.com',
+    email: 'subhashish.mindxcape@gmail.com',
   },
   {
     name: 'bus-adventures',
@@ -51,6 +51,21 @@ export const users = [
     name: 'Staff bus-adventures',
     roles: [ROLE.USER],
     email: 'staff-bus-adventures@mailinator.com',
+  },
+  {
+    name: 'Ang Nuru Sherpa',
+    roles: [ROLE.ADMIN],
+    email: 'sherpanuru629@gmail.com',
+  },
+  {
+    name: 'Accounts Boss Adventure',
+    roles: [ROLE.ADMIN],
+    email: 'bossadventureacc17@gmail.com',
+  },
+  {
+    name: 'Reservations Boss Adventure',
+    roles: [ROLE.ADMIN],
+    email: 'reservation@boss-adventure.com',
   },
 ];
 
