@@ -289,7 +289,17 @@ export class UsersService {
         where: { id },
         include: {
           professional: true,
-          asset: true,
+          asset: {
+            select: {
+              citizenshipImg: true,
+              guideLicenseImg: true,
+              panCardImg: true,
+              cvImg: true,
+              namBookImg: true,
+              nationIdImg: true,
+              passportImg: true,
+            },
+          },
           roles: true,
           bank: {
             select: {
@@ -300,6 +310,38 @@ export class UsersService {
           },
         },
       });
+
+      const { asset } = user;
+
+      if (asset) {
+        const newAsset = {};
+        const signedAssets = await Promise.all(
+          Object.keys(asset).map(async key => {
+            if (asset[key]) {
+              return {
+                [key]: await this.awsService.getSignedUrlFromS3(asset[key]),
+              };
+            }
+            return {
+              [key]: null,
+            };
+          }),
+        );
+
+        signedAssets.forEach((asset: any) => {
+          for (const [key, value] of Object.entries(asset)) {
+            newAsset[key] = value;
+          }
+        });
+
+        return {
+          ...user,
+          asset: newAsset,
+          profileImage: user?.profileImage
+            ? await this.awsService.getSignedUrlFromS3(user.profileImage)
+            : null,
+        };
+      }
 
       return {
         ...user,
