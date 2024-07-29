@@ -180,7 +180,6 @@ export class GroupsService {
               user: {
                 include: {
                   roles: true,
-                  address: true,
                   professional: true,
                 },
               },

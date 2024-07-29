@@ -2,7 +2,65 @@ import { PartialType } from '@nestjs/mapped-types';
 import { ApiProperty } from '@nestjs/swagger';
 import { Designation, Role, Status } from '@prisma/client';
 import { Transform } from 'class-transformer';
-import { IsString, IsEmail, IsOptional } from 'class-validator';
+import { IsString, IsEmail, IsOptional, ValidateIf } from 'class-validator';
+
+export class CreateAssetsDto {
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    description: 'Citizenship image of the user',
+    example: 'https://example.com/image.jpg',
+  })
+  citizenshipImg: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    description: 'passport image of the user',
+    example: 'https://example.com/image.jpg',
+  })
+  passportImg: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    description: 'Pan card image of the user',
+    example: 'https://example.com/image.jpg',
+  })
+  panCardImg: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    description: 'National id image of the user',
+    example: 'https://example.com/image.jpg',
+  })
+  nationIdImg: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    description: 'Nam book image of the user',
+    example: 'https://example.com/image.jpg',
+  })
+  namBookImg: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    description: 'Guide license image of the user',
+    example: 'https://example.com/image.jpg',
+  })
+  guideLicenseImg: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    description: 'CV image of the user',
+    example: 'https://example.com/image.jpg',
+  })
+  cvImg: string;
+}
 
 export class CreateBankDto {
   @IsString()
@@ -37,11 +95,23 @@ export class CreateBankDto {
 
 export class CreateUserDto {
   @IsString()
+  @IsOptional()
   @ApiProperty({
     description: 'Gender of the user',
     example: 'Male | Female | Other',
   })
   gender: string;
+
+  // validate if the value is in the Role enum
+  @Transform(({ value }) => value.toUpperCase(), { toClassOnly: true })
+  @ValidateIf((object, value) => value in Role)
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    description: 'Array of roles associated with the user',
+    example: 'USER',
+  })
+  role: Role;
 
   @IsEmail()
   @IsOptional()
@@ -71,14 +141,6 @@ export class CreateUserDto {
   @IsString()
   @IsOptional()
   @ApiProperty({
-    description: 'Pan number of user',
-    example: 'afa',
-  })
-  panNumber: string;
-
-  @IsString()
-  @IsOptional()
-  @ApiProperty({
     description: 'Profile image url of the user',
     example: 'https://example.com/image.jpg',
   })
@@ -96,6 +158,15 @@ export class CreateUserDto {
   @IsString()
   @IsOptional()
   @ApiProperty({
+    description: 'Designation of the user',
+    example: 'ACCOUNT',
+  })
+  designation: Designation;
+
+  @Transform(({ value }) => new Date(value).toISOString(), { toClassOnly: true })
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
     description: 'Date of birth of the user',
     example: '2012-12-12',
   })
@@ -104,66 +175,26 @@ export class CreateUserDto {
   @IsString()
   @IsOptional()
   @ApiProperty({
-    description: 'Country of the user',
-    example: 'Nepal',
+    description: 'Language of the user',
+    example: 'Nepali',
   })
-  country: string;
+  language: string;
 
   @IsString()
   @IsOptional()
   @ApiProperty({
-    description: 'State of the user',
-    example: 'Bagmati',
+    description: 'Category of the user',
+    example: 'ABC',
   })
-  state: string;
-
-  @IsString()
-  @IsOptional()
-  @ApiProperty({
-    description: 'City of the user',
-    example: 'Kathmandu',
-  })
-  city: string;
+  category: string;
 
   @IsString()
   @IsOptional()
   @ApiProperty({
     description: 'Address of the user',
-    example: 'Koteshor - 17',
+    example: 'Koteshor - 17, Kathmandu, Nepal',
   })
   address: string;
-
-  @IsString()
-  @IsOptional()
-  @ApiProperty({
-    description: 'Zip code of the user',
-    example: '44600',
-  })
-  zipCode: string;
-
-  @IsString()
-  @IsOptional()
-  @ApiProperty({
-    description: 'Company name of the user',
-    example: 'ABC Pvt. Ltd.',
-  })
-  companyName: string;
-
-  @IsString()
-  @IsOptional()
-  @ApiProperty({
-    description: 'Passport number of the user',
-    example: 'CA22555',
-  })
-  passportNumber: string;
-
-  @IsString()
-  @IsOptional()
-  @ApiProperty({
-    description: 'Passport expire date of the user',
-    example: '2024-05-04',
-  })
-  passportExpire: string;
 
   @IsString()
   @IsOptional()
@@ -184,10 +215,26 @@ export class CreateUserDto {
   @IsString()
   @IsOptional()
   @ApiProperty({
-    description: 'Designation of the user',
-    example: 'ACCOUNT',
+    description: 'Passport number of the user',
+    example: 'CA22555',
   })
-  designation: Designation;
+  passportNumber: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    description: 'Passport expire date of the user',
+    example: '2024-05-04',
+  })
+  passportExpire: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    description: 'Pan number of user',
+    example: 'afa',
+  })
+  panNumber: string;
 
   @IsString()
   @IsOptional()
@@ -200,11 +247,29 @@ export class CreateUserDto {
   @IsString()
   @IsOptional()
   @ApiProperty({
+    description: 'Remark while creating user',
+    example: 'Owner of the company',
+  })
+  remark: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    description: 'National Id Number of the user',
+    example: 'CA22555',
+  })
+  nationalIdNumber: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
     description: 'Guide license of the user',
     example: 'RAC78',
   })
-  guide_license: string;
+  guideLicense: string;
 
+  // convert date to ISO-8601 format
+  @Transform(({ value }) => new Date(value).toISOString(), { toClassOnly: true })
   @IsString()
   @IsOptional()
   @ApiProperty({
@@ -213,14 +278,30 @@ export class CreateUserDto {
   })
   nma: string;
 
-  @Transform(({ value }) => value.toUpperCase(), { toClassOnly: true })
+  @Transform(({ value }) => new Date(value).toISOString(), { toClassOnly: true })
   @IsString()
   @IsOptional()
   @ApiProperty({
-    description: 'Array of roles associated with the user',
-    example: 'USER',
+    description: 'Date of expire guide license',
+    example: '2083-1-1',
   })
-  role: Role;
+  guideLicenseExpire: string;
+
+  @IsOptional()
+  @ApiProperty({
+    description: 'Asset of the user',
+    type: `
+    {
+      citizenshipImg: string;
+      panCardImg: string;
+      nationIdImg: string;
+      namBookImg: string;
+      guideLicenseImg: string;
+      cvImg: string;
+    }
+    `,
+  })
+  asset: CreateAssetsDto;
 }
 
 export class UpdateUserDto extends PartialType(CreateUserDto) {}

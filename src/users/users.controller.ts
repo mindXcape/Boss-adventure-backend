@@ -17,6 +17,7 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import { RoleGuard } from 'src/auth/guards/role.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { PaginateQueryDto } from './dto/paginateUser.dto';
+import { Role } from '@prisma/client';
 
 @ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard, RoleGuard)
@@ -35,8 +36,12 @@ export class UsersController {
   })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   create(@Body() createUserDto: CreateUserDto) {
+    if (Role[createUserDto.role] === undefined) {
+      throw new BadRequestException('Invalid role provided');
+    }
     return this.usersService.create(createUserDto);
   }
+
   @Roles('ADMIN')
   @ApiOperation({ summary: 'List all user' })
   @ApiResponse({
