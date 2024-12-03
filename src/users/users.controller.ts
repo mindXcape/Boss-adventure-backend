@@ -37,6 +37,7 @@ export class UsersController {
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
+
   @Roles('ADMIN')
   @ApiOperation({ summary: 'List all user' })
   @ApiResponse({

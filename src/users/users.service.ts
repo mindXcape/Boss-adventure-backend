@@ -444,27 +444,27 @@ export class UsersService {
     return null;
   }
 
-  async findOneByEmail(email: string): Promise<any> {
-    this._logger.log(`Fetching user by email: ${email} `);
-    try {
-      const user = await this.prisma.user.findUnique({
-        where: { email },
-        include: {
-          address: true,
-          professional: true,
-          roles: true,
-          bank: true,
-        },
-      });
-      return {
-        ...user,
-        profileImage: user.profileImage
-          ? await this.awsService.getSignedUrlFromS3(user.profileImage)
-          : null,
-      };
-    } catch (error) {
-      this._logger.error(error.message, error.stack);
-      throw new BadRequestException(error.message);
-    }
-  }
+  // async findOneByEmail(email: string): Promise<any> {
+  //   this._logger.log(`Fetching user by email: ${email} `);
+  //   try {
+  //     const user = await this.prisma.user.findUnique({
+  //       where: { email },
+  //       include: {
+  //         address: true,
+  //         professional: true,
+  //         roles: true,
+  //         bank: true,
+  //       },
+  //     });
+  //     return {
+  //       ...user,
+  //       profileImage: user.profileImage
+  //         ? await this.awsService.getSignedUrlFromS3(user.profileImage)
+  //         : null,
+  //     };
+  //   } catch (error) {
+  //     this._logger.error(error.message, error.stack);
+  //     throw new BadRequestException(error.message);
+  //   }
+  // }
 }

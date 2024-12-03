@@ -24,7 +24,7 @@ Table admins {
 Table users {
   id String [pk]
   name String
-  email String [unique, not null]
+  email String
   phone String
   profileImage String
   gender String

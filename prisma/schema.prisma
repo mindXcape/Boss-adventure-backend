@@ -70,7 +70,7 @@ model Admin {
 model User {
   id             String               @id @default(uuid())
   name           String?
-  email          String               @unique
+  email          String?
   phone          String?
   profileImage   String?
   gender         String?
