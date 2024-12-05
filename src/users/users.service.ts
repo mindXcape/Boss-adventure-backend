@@ -10,7 +10,7 @@ export class UsersService {
   private readonly _logger = new Logger('User Services');
   constructor(private prisma: PrismaService, private awsService: AwsService) {}
 
-  async create(createUserDto: CreateUserDto) {
+  async create(createUserDto: any) {
     this._logger.log(`Creating new user: ${createUserDto?.email}`);
 
     const {
