@@ -17,6 +17,7 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import { RoleGuard } from 'src/auth/guards/role.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { PaginateQueryDto } from './dto/paginateUser.dto';
+import { Public } from 'src/common/decorators/public.decorator';
 
 @ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard, RoleGuard)
@@ -25,7 +26,8 @@ import { PaginateQueryDto } from './dto/paginateUser.dto';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Roles('ADMIN')
+  // @Roles('ADMIN')
+  @Public()
   @Post()
   @ApiOperation({ summary: 'Create new user' })
   @ApiResponse({
@@ -35,7 +37,12 @@ export class UsersController {
   })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   create(@Body() createUserDto: any) {
-    return this.usersService.create(createUserDto);
+    try {
+      console.log(createUserDto);
+      return this.usersService.create(createUserDto);
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   @Roles('ADMIN')
