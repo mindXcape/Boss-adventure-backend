@@ -18,7 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: dev
+          ref: main
 
       - name: import env file
         run: |
@@ -41,6 +41,7 @@ jobs:
           context: .
           file: Dockerfile
           push: true
+          no-cache: true
           tags: dipeshkumarsah98/ba:backend-prod
 
       - name: Build Docker image
