@@ -41,16 +41,6 @@ export class UsersService {
     try {
       this._logger.log(`Registering new user: ${createUserDto?.email}`);
 
-      const isUnique = await this.prisma.user.findFirst({
-        where: {
-          email,
-        },
-      });
-
-      if (isUnique) {
-        throw new BadRequestException('Email should be unique');
-      }
-
       const user = await this.prisma.user.create({
         data: {
           name,
