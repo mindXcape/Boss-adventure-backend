@@ -1,20 +1,50 @@
-FROM node:20-alpine3.17 As build
+# Stage 1: Build Stage
+FROM node:20-alpine3.17 AS build
+
+# Set the working directory
 WORKDIR /usr/src/app
+
+# Install OpenSSL for Prisma and other dependencies
 RUN apk add --no-cache openssl
+
+# Copy the package files and install dependencies
 COPY package.json package-lock.json ./
 RUN npm install --force
+
+# Copy the rest of the application files
 COPY . ./
-RUN npm run prisma:generate
+
+# Add 'linux-musl' binary target in Prisma schema and generate Prisma Client
+RUN npx prisma generate
+
+# Build the application (e.g., for TypeScript -> JavaScript)
 RUN npm run build
 
-FROM node:18-alpine AS deps
+
+# Stage 2: Dependencies Stage
+FROM node:20-alpine3.17 AS deps
+
+# Set the working directory
 WORKDIR /usr/src/app
-COPY package*.json package-lock.json ./
+
+# Copy the package files and install only production dependencies
+COPY package.json package-lock.json ./
 RUN npm install --omit=dev --force && npm cache clean --force
 
-FROM node:18-alpine As production
+
+# Stage 3: Production Stage
+FROM node:20-alpine3.17 AS production
+
+# Run as a non-root user for security
 USER node
+
+# Set the working directory
 WORKDIR /usr/src/app
+
+# Install OpenSSL for Prisma in production
+RUN apk add --no-cache openssl
+
+# Copy the compiled application and necessary files
 COPY --chown=node:node --from=build /usr/src/app/dist/src ./src
 COPY --chown=node:node --from=build /usr/src/app/.env .env
 COPY --chown=node:node --from=build /usr/src/app/package.json .
@@ -24,8 +54,11 @@ COPY --chown=node:node --from=build /usr/src/app/node_modules/.prisma/client ./n
 COPY --chown=node:node --from=build /usr/src/app/prisma ./prisma/
 COPY --chown=node:node --from=build /usr/src/app/tsconfig.json .
 
+# Set environment to production
 ENV NODE_ENV production
+
+# Expose the application port
 EXPOSE 3333
 
-# Start the server using the production build
-CMD [ "node", "src/main.js"]
+# Start the server
+CMD [ "node", "src/main.js" ]
