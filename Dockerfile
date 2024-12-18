@@ -1,17 +1,18 @@
-FROM node:18-alpine As build
+FROM node:20-alpine3.17 As build
 WORKDIR /usr/src/app
+RUN apk add --no-cache openssl
 COPY package.json package-lock.json ./
 RUN npm install --force
 COPY . ./
 RUN npm run prisma:generate
 RUN npm run build
 
-FROM node:18-alpine AS deps
+FROM node:20-alpine3.17 AS deps
 WORKDIR /usr/src/app
 COPY package*.json package-lock.json ./
 RUN npm install --omit=dev --force && npm cache clean --force
 
-FROM node:18-alpine As production
+FROM node:20-alpine3.17 As production
 USER node
 WORKDIR /usr/src/app
 COPY --chown=node:node --from=build /usr/src/app/dist/src ./src

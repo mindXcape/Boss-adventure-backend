@@ -12,9 +12,10 @@ export class AwsService {
     try {
       const uploadToS3 = new Upload({
         client: new S3({
+          endpoint: process.env.DO_ENDPOINT || 'https://blr1.digitaloceanspaces.com',
           credentials: {
-            accessKeyId: process.env.S3_ACCESS_KEY_ID,
-            secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+            accessKeyId: process.env.DO_ACCESS_TOKEN,
+            secretAccessKey: process.env.DO_SECRET_ACCESS_TOKEN,
           },
           region: 'ap-south-1',
         }),
@@ -26,6 +27,7 @@ export class AwsService {
           Bucket: process.env.S3_BUCKET_NAME,
           Key: filename,
           Body: streams,
+          ACL: 'public-read',
         },
       });
 
@@ -39,9 +41,10 @@ export class AwsService {
 
   async getSignedUrlFromS3(filename: string, time?: number) {
     const s3 = new S3({
+      endpoint: process.env.DO_ENDPOINT || 'https://blr1.digitaloceanspaces.com',
       credentials: {
-        accessKeyId: process.env.S3_ACCESS_KEY_ID,
-        secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+        accessKeyId: process.env.DO_ACCESS_TOKEN,
+        secretAccessKey: process.env.DO_SECRET_ACCESS_TOKEN,
       },
       region: process.env.S3_BUCKET_REGION,
     });
@@ -53,15 +56,21 @@ export class AwsService {
 
     const url = await getSignedUrl(s3, new GetObjectCommand(params), {
       expiresIn: time || 60 * 60 * 5,
-    }); // 5 Hrs
+    });
+
     return url;
+  }
+
+  async getUrlFromS3(filename: string) {
+    return `https://${process.env.S3_BUCKET_NAME}.${process.env.DO_ENDPOINT}/${filename}`;
   }
 
   async deleteFileFromS3(filename: string) {
     const s3 = new S3({
+      endpoint: process.env.DO_ENDPOINT || 'https://blr1.digitaloceanspaces.com',
       credentials: {
-        accessKeyId: process.env.S3_ACCESS_KEY_ID,
-        secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+        accessKeyId: process.env.DO_ACCESS_TOKEN,
+        secretAccessKey: process.env.DO_SECRET_ACCESS_TOKEN,
       },
       region: process.env.S3_BUCKET_REGION,
     });

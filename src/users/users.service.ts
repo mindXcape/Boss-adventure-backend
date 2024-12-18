@@ -3,7 +3,7 @@ import { AwsService } from 'src/aws/aws.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { paginate } from 'src/utils/paginate';
 import { PaginateQueryDto } from './dto/paginateUser.dto';
-import { CreateBankDto, CreateUserDto, UpdateUserDto } from './dto/user.dto';
+import { CreateBankDto, UpdateUserDto } from './dto/user.dto';
 
 @Injectable()
 export class UsersService {
@@ -40,16 +40,6 @@ export class UsersService {
     } = createUserDto;
     try {
       this._logger.log(`Registering new user: ${createUserDto?.email}`);
-
-      const isUnique = await this.prisma.user.findFirst({
-        where: {
-          email,
-        },
-      });
-
-      if (isUnique) {
-        throw new BadRequestException('Email should be unique');
-      }
 
       const user = await this.prisma.user.create({
         data: {
